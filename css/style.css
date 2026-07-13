@@ -1,0 +1,44 @@
+/*
+========================================================
+
+FaulkerVerse Engine
+
+File:
+    style.css
+
+Purpose:
+    Global engine styles.
+
+========================================================
+*/
+
+html,
+body
+{
+    width: 100%;
+    height: 100%;
+
+    margin: 0;
+    padding: 0;
+
+    overflow: hidden;
+
+    background: #000;
+}
+
+body
+{
+    display: block;
+}
+
+#gameCanvas
+{
+    width: 100vw;
+    height: 100vh;
+
+    display: block;
+
+    touch-action: none;
+
+    outline: none;
+}

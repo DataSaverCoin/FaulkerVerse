@@ -1,0 +1,23 @@
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# VS Code
+.vscode/
+
+# Logs
+*.log
+
+# Temporary
+*.tmp
+
+# Node (future)
+node_modules/
+
+# Build output (future)
+dist/
+
+# OS
+desktop.ini
