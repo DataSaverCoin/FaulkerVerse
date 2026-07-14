@@ -23,11 +23,26 @@ export const Config =
     },
 
     Camera:
-    {
-        Radius: 60,
-        MinRadius: 10,
-        MaxRadius: 250
-    },
+{
+    //
+    // Third-person follow camera.
+    //
+
+    Distance: 8,
+
+    MinDistance: 5,
+
+    MaxDistance: 16,
+
+    Pitch:
+        Math.PI / 4,
+
+    TargetHeight: 1.75,
+
+    FollowSpeed: 10.0,
+
+    ZoomSpeed: 0.02
+},
 
     World:
     {

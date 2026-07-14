@@ -1,64 +1,139 @@
 # FaulkerVerse
 
-FaulkerVerse is an open-world third-person RPG built on the BabylonJS engine.
+FaulkerVerse is a custom third-person game engine built with Babylon.js.
 
-This repository represents the next-generation rewrite of the original FaulkVerse project.
+The project is being developed incrementally using sprint-based milestones, with each sprint producing a stable checkpoint before moving on to the next feature set.
 
-The goal is not simply to build a game, but to build a clean, maintainable engine capable of supporting:
+---
 
-- Procedural terrain
+# Engine Architecture
+
+```
+Engine
+│
+├── World
+│   ├── Scene
+│   ├── Lighting
+│   ├── Ground
+│   └── Camera
+│
+├── Player
+│
+├── Input
+│
+├── CameraController
+│
+└── UI
+```
+
+### Design Goals
+
+- Single source of truth for player movement.
+- Camera follows the player.
+- Character follows the player.
+- Player never follows the camera.
+- Modular systems with clear ownership.
+- Configuration-driven engine behavior.
+- Complete replacement files during development.
+
+---
+
+# Sprint Progress
+
+## Sprint 1 — Engine Foundation
+
+Completed
+
+- Engine bootstrap
+- Babylon.js integration
+- Scene creation
+- Lighting
+- Ground
+- Project structure
+
+---
+
+## Sprint 2 — Player
+
+Completed
+
+- Player entity
+- Capsule placeholder
+- Keyboard movement
+- Run modifier
+- Player rotation
+
+---
+
+## Sprint 3 — Camera Foundation
+
+Completed
+
+- Camera subsystem
+- Camera configuration
+- Camera controller architecture
+- Camera update pipeline
+
+---
+
+## Sprint 4 — Perspective
+
+Completed
+
+- Third-person camera
+- CameraController owns camera follow behavior
+- ArcRotateCamera integration
+- Mouse orbit
+- Mouse wheel zoom
+- Configuration-driven camera settings
+- Camera smoothing foundation
+- Stable Engine → CameraController → Camera update pipeline
+
+### Current Limitations
+
+- Camera is still an orbit camera.
+- Movement is world-relative.
+- Camera does not yet automatically stay behind the player.
+- No camera collision.
+- No shoulder offset.
+- Placeholder capsule instead of animated character.
+
+---
+
+# Sprint 5 Goals
+
+- Camera-relative movement
+- Player rotation follows movement direction
+- Character GLB import
+- Animation controller
+- Idle animation
+- Walk animation
+- Run animation
+
+---
+
+# Long-Term Roadmap
+
+- Terrain streaming
+- Vegetation
+- Buildings
+- Roads
 - NPCs
 - Vehicles
-- Wildlife
-- Quests
 - Inventory
-- Multiplayer
-- Dynamic weather
-- Persistent world saving
+- Quests
+- Save / Load
+- Multiplayer investigation
 
 ---
 
-## Current Status
+# Development Workflow
 
-Sprint 0
+Each sprint follows the same process:
 
-Engine bootstrap in progress.
-
----
-
-## Engine Philosophy
-
-Small systems.
-
-Single responsibility.
-
-One source of truth.
-
-Readable code.
-
-Predictable architecture.
-
----
-
-## Technology
-
-- BabylonJS
-- JavaScript (ES Modules)k
-- HTML5
-- CSS3
-
----
-
-## Development Workflow
-
-Each Sprint produces a working build.
-
-Every Sprint ends with a Git commit.
-
-No feature is added without first deciding which system owns it.
-
----
-
-## License
-
-Private development project.
+1. Upload the current project ZIP.
+2. Read the complete project before making changes.
+3. Preserve the existing architecture unless a deliberate architectural change is approved.
+4. Return complete replacement files only.
+5. Verify functionality.
+6. Commit and tag the sprint.

@@ -7,8 +7,9 @@ File:
     Engine.js
 
 Purpose:
-    Owns the Babylon engine and
-    engine lifecycle.
+    Owns the Babylon engine,
+    engine lifecycle,
+    and top-level game systems.
 
 ========================================================
 */
@@ -17,6 +18,9 @@ Purpose:
 
 import { Config } from "./Config.js";
 import { World } from "../world/World.js";
+import { Input } from "../player/Input.js";
+import { Player } from "../player/Player.js";
+import { CameraController } from "./CameraController.js";
 
 export class Engine
 {
@@ -24,16 +28,27 @@ export class Engine
     {
         this.canvas = null;
         this.engine = null;
+
         this.world = null;
+
+        this.input = null;
+        this.player = null;
+
+        this.cameraController = null;
+
+        this.lastFrameTime = 0;
     }
 
     async start()
     {
         this.initializeCanvas();
-
         this.initializeEngine();
 
         await this.initializeWorld();
+
+        this.initializeInput();
+        this.initializePlayer();
+        this.initializeCameraController();
 
         this.startRenderLoop();
 
@@ -43,9 +58,7 @@ export class Engine
     initializeCanvas()
     {
         this.canvas =
-            document.getElementById(
-                "gameCanvas"
-            );
+            document.getElementById("gameCanvas");
 
         if (!this.canvas)
         {
@@ -79,10 +92,55 @@ export class Engine
         await this.world.initialize();
     }
 
+    initializeInput()
+    {
+        this.input =
+            new Input();
+    }
+
+    initializePlayer()
+    {
+        this.player =
+            new Player(
+                this.world.scene,
+                this.input
+            );
+    }
+
+    initializeCameraController()
+    {
+        this.cameraController =
+            new CameraController(
+                this.world.camera,
+                this.player
+            );
+    }
+
     startRenderLoop()
     {
+        this.lastFrameTime =
+            performance.now();
+
         this.engine.runRenderLoop(() =>
         {
+            const now =
+                performance.now();
+
+            const deltaSeconds =
+                (now - this.lastFrameTime) /
+                1000.0;
+
+            this.lastFrameTime =
+                now;
+
+            this.player.update(
+                deltaSeconds
+            );
+
+            this.cameraController.update(
+                deltaSeconds
+            );
+
             this.world.scene.render();
         });
     }

@@ -136,27 +136,31 @@ export class World
     {
         this.camera =
             new BABYLON.ArcRotateCamera(
-                "DebugCamera",
+                "ThirdPersonCamera",
 
                 -Math.PI / 2,
 
-                Math.PI / 3,
+                Config.Camera.Pitch,
 
-                Config.Camera.Radius,
+                Config.Camera.Distance,
 
                 BABYLON.Vector3.Zero(),
 
                 this.scene
             );
 
+        //
+        // Configure the camera once.
+        //
+
         this.camera.lowerRadiusLimit =
-            Config.Camera.MinRadius;
+            Config.Camera.MinDistance;
 
         this.camera.upperRadiusLimit =
-            Config.Camera.MaxRadius;
+            Config.Camera.MaxDistance;
 
         this.camera.wheelDeltaPercentage =
-            0.01;
+            Config.Camera.ZoomSpeed;
 
         this.camera.attachControl(
             this.canvas,
