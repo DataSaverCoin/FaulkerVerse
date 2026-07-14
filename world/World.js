@@ -41,6 +41,7 @@ export class World
         this.createScene();
         this.createLighting();
         this.createGround();
+        this.createDebugWorld();
         this.createCamera();
     }
 
@@ -75,7 +76,7 @@ export class World
                 this.scene
             );
 
-        this.hemiLight.intensity = 0.45;
+        this.hemiLight.intensity = 0.60;
 
         this.sun =
             new BABYLON.DirectionalLight(
@@ -95,7 +96,7 @@ export class World
                 100
             );
 
-        this.sun.intensity = 1.2;
+        this.sun.intensity = 1.35;
     }
 
     createGround()
@@ -114,22 +115,93 @@ export class World
             );
 
         const material =
-            new BABYLON.StandardMaterial(
+            new BABYLON.GridMaterial(
                 "GroundMaterial",
                 this.scene
             );
 
-        material.diffuseColor =
+        material.majorUnitFrequency = 10;
+        material.minorUnitVisibility = 0.45;
+        material.gridRatio = 1;
+        material.backFaceCulling = false;
+
+        material.mainColor =
             new BABYLON.Color3(
-                Config.Colors.Ground.r,
-                Config.Colors.Ground.g,
-                Config.Colors.Ground.b
+                0.72,
+                0.72,
+                0.72
             );
+
+        material.lineColor =
+            new BABYLON.Color3(
+                0.32,
+                0.32,
+                0.32
+            );
+
+        material.opacity = 0.98;
 
         this.ground.material =
             material;
 
         this.ground.receiveShadows = true;
+    }
+
+    createDebugWorld()
+    {
+        this.createAxis(
+            BABYLON.Axis.X,
+            BABYLON.Color3.Red(),
+            "XAxis"
+        );
+
+        this.createAxis(
+            BABYLON.Axis.Z,
+            BABYLON.Color3.Blue(),
+            "ZAxis"
+        );
+
+        const origin =
+            BABYLON.MeshBuilder.CreateSphere(
+                "Origin",
+                {
+                    diameter: 0.4
+                },
+                this.scene
+            );
+
+        origin.position.y = 0.2;
+
+        const material =
+            new BABYLON.StandardMaterial(
+                "OriginMaterial",
+                this.scene
+            );
+
+        material.emissiveColor =
+            BABYLON.Color3.Green();
+
+        origin.material =
+            material;
+    }
+
+    createAxis(direction, color, name)
+    {
+        const axis =
+            BABYLON.MeshBuilder.CreateLines(
+                name,
+                {
+                    points:
+                    [
+                        BABYLON.Vector3.Zero(),
+                        direction.scale(25)
+                    ]
+                },
+                this.scene
+            );
+
+        axis.color =
+            color;
     }
 
     createCamera()
@@ -150,7 +222,7 @@ export class World
             );
 
         //
-        // Configure the camera once.
+        // Camera limits.
         //
 
         this.camera.lowerRadiusLimit =
@@ -158,6 +230,17 @@ export class World
 
         this.camera.upperRadiusLimit =
             Config.Camera.MaxDistance;
+
+        //
+        // Prevent camera from going
+        // below the ground.
+        //
+
+        this.camera.lowerBetaLimit =
+            0.30;
+
+        this.camera.upperBetaLimit =
+            Math.PI / 2.05;
 
         this.camera.wheelDeltaPercentage =
             Config.Camera.ZoomSpeed;

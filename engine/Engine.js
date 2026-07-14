@@ -50,6 +50,17 @@ export class Engine
         this.initializePlayer();
         this.initializeCameraController();
 
+        //
+        // Sprint 5.1
+        // Give the player access to the
+        // gameplay camera after both systems
+        // have been created.
+        //
+
+        this.player.setCameraController(
+            this.cameraController
+        );
+
         this.startRenderLoop();
 
         this.registerResizeHandler();

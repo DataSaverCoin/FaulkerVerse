@@ -15,6 +15,7 @@ Purpose:
     • Orbit
     • Zoom
     • Camera smoothing
+    • Movement basis generation
     • Future collision support
 
 ========================================================
@@ -39,10 +40,6 @@ export class CameraController
                     0
                 )
             );
-
-        //
-        // Configure the camera ONCE.
-        //
 
         this.camera.radius =
             Config.Camera.Distance;
@@ -94,12 +91,54 @@ export class CameraController
                 interpolation
             );
 
-        //
-        // Only update the follow target.
-        //
-
         this.camera.setTarget(
             this.target
         );
+    }
+
+    /*
+    ========================================================
+
+    Returns camera-relative movement vectors.
+
+    forward = camera forward projected
+              onto the XZ plane.
+
+    right = camera right projected
+            onto the XZ plane.
+
+    ========================================================
+    */
+
+    getMovementBasis()
+    {
+        const forward =
+            this.camera
+                .getForwardRay()
+                .direction
+                .clone();
+
+        forward.y = 0;
+
+        if (forward.lengthSquared() > 0)
+        {
+            forward.normalize();
+        }
+
+        const right =
+            BABYLON.Vector3.Cross(
+                BABYLON.Axis.Y,
+                forward
+            );
+
+        if (right.lengthSquared() > 0)
+        {
+            right.normalize();
+        }
+
+        return {
+            forward,
+            right
+        };
     }
 }

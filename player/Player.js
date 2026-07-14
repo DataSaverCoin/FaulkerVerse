@@ -22,12 +22,22 @@ export class Player
         this.scene = scene;
         this.input = input;
 
+        this.cameraController = null;
+
         this.walkSpeed = 8.0;
         this.runSpeed = 14.0;
+
+        this.rotationSpeed = 10.0;
 
         this.mesh = null;
 
         this.createCapsule();
+    }
+
+    setCameraController(cameraController)
+    {
+        this.cameraController =
+            cameraController;
     }
 
     createCapsule()
@@ -78,12 +88,36 @@ export class Player
             return;
         }
 
-        const direction =
-            new BABYLON.Vector3(
-                movement.x,
-                0,
-                movement.z
-            );
+        let direction;
+
+        if (this.cameraController)
+        {
+            const basis =
+                this.cameraController.getMovementBasis();
+
+            direction =
+                basis.forward.scale(
+                    movement.z
+                ).add(
+                    basis.right.scale(
+                        movement.x
+                    )
+                );
+        }
+        else
+        {
+            direction =
+                new BABYLON.Vector3(
+                    movement.x,
+                    0,
+                    movement.z
+                );
+        }
+
+        if (direction.lengthSquared() === 0)
+        {
+            return;
+        }
 
         direction.normalize();
 
@@ -94,14 +128,26 @@ export class Player
 
         this.mesh.position.addInPlace(
             direction.scale(
-                speed * deltaSeconds
+                speed *
+                deltaSeconds
             )
         );
 
-        this.mesh.rotation.y =
+        const desiredRotation =
             Math.atan2(
                 direction.x,
                 direction.z
+            );
+
+        this.mesh.rotation.y =
+            BABYLON.Scalar.LerpAngle(
+                this.mesh.rotation.y,
+                desiredRotation,
+                Math.min(
+                    1.0,
+                    this.rotationSpeed *
+                    deltaSeconds
+                )
             );
     }
 
