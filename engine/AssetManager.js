@@ -58,9 +58,7 @@ export class AssetManager
             );
 
         const root =
-            result.meshes.find(
-                mesh => mesh.name !== "__root__"
-            );
+            result.meshes[0];
 
         return {
             root,
