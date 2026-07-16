@@ -1,0 +1,97 @@
+/*
+========================================================
+
+FaulkerVerse Engine
+
+File:
+    developer-hud.css
+
+Purpose:
+    Styling for the developer HUD.
+
+========================================================
+*/
+
+#developerHUD
+{
+    position: fixed;
+
+    top: 12px;
+    left: 12px;
+
+    width: 260px;
+
+    padding: 12px;
+
+    background: rgba(0, 0, 0, 0.72);
+
+    border: 1px solid
+        rgba(255,255,255,0.15);
+
+    border-radius: 8px;
+
+    color: #ffffff;
+
+    font-family:
+        Consolas,
+        "Courier New",
+        monospace;
+
+    font-size: 14px;
+
+    line-height: 1.45;
+
+    z-index: 99999;
+
+    user-select: none;
+
+    pointer-events: none;
+
+    box-sizing: border-box;
+}
+
+#developerHUD .hudTitle
+{
+    text-align: center;
+
+    font-weight: bold;
+
+    color: #4fc3ff;
+
+    margin-bottom: 10px;
+
+    font-size: 15px;
+}
+
+#developerHUD hr
+{
+    border: none;
+
+    border-top: 1px solid
+        rgba(255,255,255,0.15);
+
+    margin: 10px 0;
+}
+
+#developerHUD .hudRow
+{
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    margin: 2px 0;
+}
+
+#developerHUD .hudRow span:first-child
+{
+    color: #bfbfbf;
+}
+
+#developerHUD .hudRow span:last-child
+{
+    color: #ffffff;
+
+    font-weight: bold;
+}

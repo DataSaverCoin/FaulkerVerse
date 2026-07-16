@@ -18,9 +18,12 @@ Purpose:
 
 import { Config } from "./Config.js";
 import { World } from "../world/World.js";
+import { AssetManager } from "./AssetManager.js";
 import { Input } from "../player/Input.js";
 import { Player } from "../player/Player.js";
 import { CameraController } from "./CameraController.js";
+import { EntityManager } from "../entities/EntityManager.js";
+import { DeveloperHUD } from "../ui/DeveloperHUD.js";
 
 export class Engine
 {
@@ -31,10 +34,15 @@ export class Engine
 
         this.world = null;
 
+        this.assetManager = null;
+        this.entityManager = null;
+
         this.input = null;
         this.player = null;
 
         this.cameraController = null;
+
+        this.developerHUD = null;
 
         this.lastFrameTime = 0;
     }
@@ -46,19 +54,20 @@ export class Engine
 
         await this.initializeWorld();
 
+        this.initializeAssetManager();
+        this.initializeEntityManager();
+
         this.initializeInput();
         this.initializePlayer();
         this.initializeCameraController();
-
-        //
-        // Sprint 5.1
-        // Give the player access to the
-        // gameplay camera after both systems
-        // have been created.
-        //
+        this.initializeDeveloperHUD();
 
         this.player.setCameraController(
             this.cameraController
+        );
+
+        this.entityManager.add(
+            this.player
         );
 
         this.startRenderLoop();
@@ -69,7 +78,9 @@ export class Engine
     initializeCanvas()
     {
         this.canvas =
-            document.getElementById("gameCanvas");
+            document.getElementById(
+                "gameCanvas"
+            );
 
         if (!this.canvas)
         {
@@ -103,6 +114,22 @@ export class Engine
         await this.world.initialize();
     }
 
+    initializeAssetManager()
+    {
+        this.assetManager =
+            new AssetManager(
+                this.world.scene
+            );
+    }
+
+    initializeEntityManager()
+    {
+        this.entityManager =
+            new EntityManager(
+                this.world.scene
+            );
+    }
+
     initializeInput()
     {
         this.input =
@@ -127,6 +154,16 @@ export class Engine
             );
     }
 
+    initializeDeveloperHUD()
+    {
+        this.developerHUD =
+            new DeveloperHUD(
+                this
+            );
+
+        this.developerHUD.initialize();
+    }
+
     startRenderLoop()
     {
         this.lastFrameTime =
@@ -144,11 +181,15 @@ export class Engine
             this.lastFrameTime =
                 now;
 
-            this.player.update(
+            this.entityManager.update(
                 deltaSeconds
             );
 
             this.cameraController.update(
+                deltaSeconds
+            );
+
+            this.developerHUD.update(
                 deltaSeconds
             );
 
