@@ -250,6 +250,10 @@ export class World
             true
         );
 
+        this.camera.inputs.removeByType(
+            "ArcRotateCameraKeyboardMoveInput"
+        );
+
         this.scene.activeCamera =
             this.camera;
     }
