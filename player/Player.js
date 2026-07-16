@@ -17,7 +17,7 @@ Purpose:
 
 export class Player
 {
-    constructor(scene, input)
+    constructor(scene, input, assetManager)
     {
         this.scene = scene;
         this.input = input;
@@ -30,8 +30,12 @@ export class Player
         this.rotationSpeed = 10.0;
 
         this.mesh = null;
+        this.characterRoot = null;
+        this.assetManager =
+            assetManager;
 
         this.createCapsule();
+        this.loadCharacter();
     }
 
     setCameraController(cameraController)
@@ -73,6 +77,35 @@ export class Player
 
         this.mesh.material =
             material;
+
+        this.mesh.isVisible =
+            false;
+    }
+
+
+    async loadCharacter()
+    {
+        const character =
+            await this.assetManager.instantiateCharacter(
+                "corey"
+            );
+
+        this.characterRoot =
+            character.root;
+
+        if (!this.characterRoot)
+        {
+            return;
+        }
+
+        this.characterRoot.parent =
+            this.mesh;
+
+        this.characterRoot.position.set(
+            0,
+            -1,
+            0
+        );
     }
 
     update(deltaSeconds)
