@@ -104,6 +104,14 @@ export class World
             this.terrain.ground;
 
         finishTerrainStartup();
+        this.terrain =
+            new TerrainManager(
+                this.scene
+            );
+
+        this.terrain.initialize();
+        this.ground =
+            this.terrain.ground;
     }
 
     createEnvironment()

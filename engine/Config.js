@@ -59,6 +59,12 @@ export const Config =
             Materials:
             {
                 Grass: [0.22, 0.45, 0.15],
+            PatchMinRadius: 5,
+            PatchMaxRadius: 18,
+            Seed: 8128,
+            Materials:
+            {
+                Grass: [0.18, 0.38, 0.12],
                 Dirt: [0.36, 0.24, 0.12],
                 Rock: [0.34, 0.36, 0.34],
                 Mud: [0.20, 0.15, 0.09],
@@ -77,6 +83,10 @@ export const Config =
                 Bushes: 48,
                 SmallRocks: 82,
                 LargeRocks: 26,
+                Trees: 70,
+                Bushes: 48,
+                SmallRocks: 70,
+                LargeRocks: 22,
                 FallenLogs: 14,
                 GrassClumps: 110
             },

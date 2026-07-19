@@ -39,6 +39,11 @@ export class AssetManager
         const finishAssetLoading =
             StartupMetrics.beginGroup(
                 "Asset loading"
+        const result =
+            await BABYLON.SceneLoader.LoadAssetContainerAsync(
+                "",
+                path,
+                this.scene
             );
         let result;
 
@@ -76,6 +81,14 @@ export class AssetManager
                 sourceName =>
                     `${characterName}_${sourceName}`,
                 false
+            );
+
+        const armatureRoot =
+            this.findNodeByName(
+                instance.rootNodes,
+                "Armature"
+            );
+
             );
 
         const armatureRoot =

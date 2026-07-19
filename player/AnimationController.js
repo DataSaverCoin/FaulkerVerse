@@ -88,6 +88,43 @@ export class AnimationController
         {
             finishAnimationStartup();
         }
+        for (const animation of characterAnimations)
+        {
+            animation.stop();
+        }
+
+        const animationFiles = {
+            Idle: "Idle",
+            Walk: "Walking",
+            Run: "Running",
+            Jump: "Jump"
+        };
+
+        await Promise.all(
+            Object.entries(
+                animationFiles
+            ).map(
+                async ([state, fileName]) =>
+                {
+                    const animation =
+                        await this.loadAnimation(
+                            characterName,
+                            fileName,
+                            skeletons
+                        );
+
+                    this.animations.set(
+                        state,
+                        animation
+                    );
+                }
+            )
+        );
+
+        this.ready = true;
+        this.setState(
+            "Idle"
+        );
     }
 
     update()
