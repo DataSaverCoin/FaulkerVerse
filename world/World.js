@@ -21,6 +21,7 @@ import { Config } from "../engine/Config.js";
 import { TerrainManager } from "../terrain/TerrainManager.js";
 import { Environment } from "./Environment.js";
 import { Lighting } from "./Lighting.js";
+import { StartupMetrics } from "../engine/Version.js";
 
 export class World
 {
@@ -88,6 +89,21 @@ export class World
 
     createTerrain()
     {
+        const finishTerrainStartup =
+            StartupMetrics.begin(
+                "Terrain"
+            );
+
+        this.terrain =
+            new TerrainManager(
+                this.scene
+            );
+
+        this.terrain.initialize();
+        this.ground =
+            this.terrain.ground;
+
+        finishTerrainStartup();
         this.terrain =
             new TerrainManager(
                 this.scene
@@ -100,6 +116,11 @@ export class World
 
     createEnvironment()
     {
+        const finishEnvironmentStartup =
+            StartupMetrics.begin(
+                "Environment"
+            );
+
         this.environment =
             new Environment(
                 this.scene,
@@ -108,6 +129,8 @@ export class World
             );
 
         this.environment.initialize();
+
+        finishEnvironmentStartup();
     }
 
     createCamera()

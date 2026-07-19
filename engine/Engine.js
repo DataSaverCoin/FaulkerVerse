@@ -24,6 +24,7 @@ import { Player } from "../player/Player.js";
 import { CameraController } from "./CameraController.js";
 import { EntityManager } from "../entities/EntityManager.js";
 import { DeveloperHUD } from "../ui/DeveloperHUD.js";
+import { StartupMetrics } from "./Version.js";
 
 export class Engine
 {
@@ -49,8 +50,21 @@ export class Engine
 
     async start()
     {
+        StartupMetrics.logBuild();
+
+        const finishTotalStartup =
+            StartupMetrics.begin(
+                "Total startup"
+            );
+        const finishEngineStartup =
+            StartupMetrics.begin(
+                "Engine"
+            );
+
         this.initializeCanvas();
         this.initializeEngine();
+
+        finishEngineStartup();
 
         await this.initializeWorld();
 
@@ -58,7 +72,13 @@ export class Engine
         this.initializeEntityManager();
 
         this.initializeInput();
+        const finishPlayerStartup =
+            StartupMetrics.begin(
+                "Player"
+            );
+
         this.initializePlayer();
+        finishPlayerStartup();
         this.initializeCameraController();
         this.initializeDeveloperHUD();
 
@@ -73,6 +93,25 @@ export class Engine
         this.startRenderLoop();
 
         this.registerResizeHandler();
+
+        const finishStartup = () =>
+        {
+            finishTotalStartup();
+            StartupMetrics.logSummary();
+        };
+        const finishFailedStartup = error =>
+        {
+            finishStartup();
+            console.error(
+                "[FaulkerVerse] Player startup failed.",
+                error
+            );
+        };
+
+        this.player.ready.then(
+            finishStartup,
+            finishFailedStartup
+        );
     }
 
     initializeCanvas()

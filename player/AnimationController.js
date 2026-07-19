@@ -15,6 +15,8 @@ Purpose:
 
 "use strict";
 
+import { StartupMetrics } from "../engine/Version.js";
+
 export class AnimationController
 {
     constructor(assetManager, input)
@@ -37,6 +39,55 @@ export class AnimationController
         characterAnimations = []
     )
     {
+        const finishAnimationStartup =
+            StartupMetrics.begin(
+                "Animations"
+            );
+
+        try
+        {
+            for (const animation of characterAnimations)
+            {
+                animation.stop();
+            }
+
+            const animationFiles = {
+                Idle: "Idle",
+                Walk: "Walking",
+                Run: "Running",
+                Jump: "Jump"
+            };
+
+            await Promise.all(
+                Object.entries(
+                    animationFiles
+                ).map(
+                    async ([state, fileName]) =>
+                    {
+                        const animation =
+                            await this.loadAnimation(
+                                characterName,
+                                fileName,
+                                skeletons
+                            );
+
+                        this.animations.set(
+                            state,
+                            animation
+                        );
+                    }
+                )
+            );
+
+            this.ready = true;
+            this.setState(
+                "Idle"
+            );
+        }
+        finally
+        {
+            finishAnimationStartup();
+        }
         for (const animation of characterAnimations)
         {
             animation.stop();

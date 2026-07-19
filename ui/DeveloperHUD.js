@@ -15,6 +15,8 @@ Purpose:
 
 "use strict";
 
+import { Version } from "../engine/Version.js";
+
 export class DeveloperHUD
 {
     constructor(engine)
@@ -50,6 +52,11 @@ export class DeveloperHUD
 `
 <div class="hudTitle">
 FaulkerVerse Developer HUD
+</div>
+
+<div class="hudRow">
+<span>Build</span>
+<span>${Version.ShortLabel}</span>
 </div>
 
 <div class="hudRow">

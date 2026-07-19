@@ -42,6 +42,8 @@ export class Player
             );
 
         this.createCapsule();
+        this.ready =
+            this.loadCharacter();
         this.loadCharacter();
     }
 

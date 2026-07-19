@@ -15,6 +15,8 @@ Purpose:
 
 "use strict";
 
+import { StartupMetrics } from "./Version.js";
+
 export class AssetManager
 {
     constructor(scene)
@@ -34,12 +36,30 @@ export class AssetManager
             return this.models.get(name);
         }
 
+        const finishAssetLoading =
+            StartupMetrics.beginGroup(
+                "Asset loading"
         const result =
             await BABYLON.SceneLoader.LoadAssetContainerAsync(
                 "",
                 path,
                 this.scene
             );
+        let result;
+
+        try
+        {
+            result =
+                await BABYLON.SceneLoader.LoadAssetContainerAsync(
+                    "",
+                    path,
+                    this.scene
+                );
+        }
+        finally
+        {
+            finishAssetLoading();
+        }
 
         this.models.set(
             name,
@@ -61,6 +81,14 @@ export class AssetManager
                 sourceName =>
                     `${characterName}_${sourceName}`,
                 false
+            );
+
+        const armatureRoot =
+            this.findNodeByName(
+                instance.rootNodes,
+                "Armature"
+            );
+
             );
 
         const armatureRoot =
