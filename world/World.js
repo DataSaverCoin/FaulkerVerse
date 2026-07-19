@@ -18,6 +18,10 @@ Purpose:
 "use strict";
 
 import { Config } from "../engine/Config.js";
+import { TerrainManager } from "../terrain/TerrainManager.js";
+import { Environment } from "./Environment.js";
+import { Lighting } from "./Lighting.js";
+import { StartupMetrics } from "../engine/Version.js";
 
 export class World
 {
@@ -30,9 +34,9 @@ export class World
 
         this.camera = null;
 
-        this.sun = null;
-        this.hemiLight = null;
-
+        this.lighting = null;
+        this.terrain = null;
+        this.environment = null;
         this.ground = null;
     }
 
@@ -40,9 +44,19 @@ export class World
     {
         this.createScene();
         this.createLighting();
-        this.createGround();
-        this.createDebugWorld();
+        this.createTerrain();
+        this.createEnvironment();
         this.createCamera();
+
+        this.scene.onBeforeRenderObservable.add(
+            () =>
+            {
+                this.environment.update(
+                    this.engine.getDeltaTime() /
+                    1000
+                );
+            }
+        );
     }
 
     createScene()
@@ -65,143 +79,50 @@ export class World
 
     createLighting()
     {
-        this.hemiLight =
-            new BABYLON.HemisphericLight(
-                "HemiLight",
-                new BABYLON.Vector3(
-                    0,
-                    1,
-                    0
-                ),
+        this.lighting =
+            new Lighting(
                 this.scene
             );
 
-        this.hemiLight.intensity = 0.60;
-
-        this.sun =
-            new BABYLON.DirectionalLight(
-                "Sun",
-                new BABYLON.Vector3(
-                    -1,
-                    -2,
-                    -1
-                ),
-                this.scene
-            );
-
-        this.sun.position =
-            new BABYLON.Vector3(
-                100,
-                200,
-                100
-            );
-
-        this.sun.intensity = 1.35;
+        this.lighting.initialize();
     }
 
-    createGround()
+    createTerrain()
     {
+        const finishTerrainStartup =
+            StartupMetrics.begin(
+                "Terrain"
+            );
+
+        this.terrain =
+            new TerrainManager(
+                this.scene
+            );
+
+        this.terrain.initialize();
         this.ground =
-            BABYLON.MeshBuilder.CreateGround(
-                "Ground",
-                {
-                    width:
-                        Config.World.GroundSize,
+            this.terrain.ground;
 
-                    height:
-                        Config.World.GroundSize
-                },
-                this.scene
-            );
-
-        const material =
-            new BABYLON.GridMaterial(
-                "GroundMaterial",
-                this.scene
-            );
-
-        material.majorUnitFrequency = 10;
-        material.minorUnitVisibility = 0.45;
-        material.gridRatio = 1;
-        material.backFaceCulling = false;
-
-        material.mainColor =
-            new BABYLON.Color3(
-                0.72,
-                0.72,
-                0.72
-            );
-
-        material.lineColor =
-            new BABYLON.Color3(
-                0.32,
-                0.32,
-                0.32
-            );
-
-        material.opacity = 0.98;
-
-        this.ground.material =
-            material;
-
-        this.ground.receiveShadows = true;
+        finishTerrainStartup();
     }
 
-    createDebugWorld()
+    createEnvironment()
     {
-        this.createAxis(
-            BABYLON.Axis.X,
-            BABYLON.Color3.Red(),
-            "XAxis"
-        );
-
-        this.createAxis(
-            BABYLON.Axis.Z,
-            BABYLON.Color3.Blue(),
-            "ZAxis"
-        );
-
-        const origin =
-            BABYLON.MeshBuilder.CreateSphere(
-                "Origin",
-                {
-                    diameter: 0.4
-                },
-                this.scene
+        const finishEnvironmentStartup =
+            StartupMetrics.begin(
+                "Environment"
             );
 
-        origin.position.y = 0.2;
-
-        const material =
-            new BABYLON.StandardMaterial(
-                "OriginMaterial",
-                this.scene
+        this.environment =
+            new Environment(
+                this.scene,
+                this.terrain,
+                this.lighting
             );
 
-        material.emissiveColor =
-            BABYLON.Color3.Green();
+        this.environment.initialize();
 
-        origin.material =
-            material;
-    }
-
-    createAxis(direction, color, name)
-    {
-        const axis =
-            BABYLON.MeshBuilder.CreateLines(
-                name,
-                {
-                    points:
-                    [
-                        BABYLON.Vector3.Zero(),
-                        direction.scale(25)
-                    ]
-                },
-                this.scene
-            );
-
-        axis.color =
-            color;
+        finishEnvironmentStartup();
     }
 
     createCamera()
@@ -248,6 +169,10 @@ export class World
         this.camera.attachControl(
             this.canvas,
             true
+        );
+
+        this.camera.inputs.removeByType(
+            "ArcRotateCameraKeyboardMoveInput"
         );
 
         this.scene.activeCamera =

@@ -15,6 +15,8 @@ Purpose:
 
 "use strict";
 
+import { StartupMetrics } from "./Version.js";
+
 export class AssetManager
 {
     constructor(scene)
@@ -34,13 +36,25 @@ export class AssetManager
             return this.models.get(name);
         }
 
-        const result =
-            await BABYLON.SceneLoader.ImportMeshAsync(
-                "",
-                "",
-                path,
-                this.scene
+        const finishAssetLoading =
+            StartupMetrics.beginGroup(
+                "Asset loading"
             );
+        let result;
+
+        try
+        {
+            result =
+                await BABYLON.SceneLoader.LoadAssetContainerAsync(
+                    "",
+                    path,
+                    this.scene
+                );
+        }
+        finally
+        {
+            finishAssetLoading();
+        }
 
         this.models.set(
             name,
@@ -57,18 +71,152 @@ export class AssetManager
                 characterName
             );
 
-        const root =
-            result.meshes.find(
-                mesh => mesh.name !== "__root__"
+        const instance =
+            result.instantiateModelsToScene(
+                sourceName =>
+                    `${characterName}_${sourceName}`,
+                false
             );
+
+        const armatureRoot =
+            this.findNodeByName(
+                instance.rootNodes,
+                "Armature"
+            );
+
+        const root =
+            armatureRoot ||
+            instance.rootNodes[0];
+
+        this.bindAnimationGroupsToSkeletons(
+            instance.animationGroups,
+            instance.skeletons
+        );
 
         return {
             root,
-            meshes: result.meshes,
-            skeletons: result.skeletons,
+            meshes:
+                this.getMeshesFromRootNodes(
+                    instance.rootNodes
+                ),
+            skeletons: instance.skeletons,
             animationGroups:
-                result.animationGroups
+                instance.animationGroups
         };
+    }
+
+    bindAnimationGroupsToSkeletons(
+        animationGroups,
+        skeletons
+    )
+    {
+        for (const animationGroup of animationGroups)
+        {
+            for (const targetedAnimation of animationGroup.targetedAnimations)
+            {
+                const transformNode =
+                    this.findSkeletonTransformNode(
+                        skeletons,
+                        targetedAnimation.target.name
+                    );
+
+                if (transformNode)
+                {
+                    targetedAnimation.target =
+                        transformNode;
+                }
+            }
+        }
+    }
+
+    findSkeletonTransformNode(skeletons, name)
+    {
+        for (const skeleton of skeletons)
+        {
+            for (const bone of skeleton.bones)
+            {
+                const transformNode =
+                    bone.getTransformNode();
+
+                if (
+                    transformNode &&
+                    (
+                        transformNode.name === name ||
+                        transformNode.name.endsWith(
+                            `_${name}`
+                        )
+                    )
+                )
+                {
+                    return transformNode;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    getMeshesFromRootNodes(rootNodes)
+    {
+        const meshes = [];
+
+        for (const rootNode of rootNodes)
+        {
+            if (typeof rootNode.getChildMeshes === "function")
+            {
+                meshes.push(
+                    ...rootNode.getChildMeshes(
+                        false
+                    )
+                );
+            }
+
+            if (typeof rootNode.getTotalVertices === "function")
+            {
+                meshes.push(
+                    rootNode
+                );
+            }
+        }
+
+        return meshes;
+    }
+
+    findNodeByName(rootNodes, name)
+    {
+        for (const rootNode of rootNodes)
+        {
+            if (
+                rootNode.name === name ||
+                rootNode.name.endsWith(
+                    `_${name}`
+                )
+            )
+            {
+                return rootNode;
+            }
+
+            const descendants =
+                typeof rootNode.getDescendants === "function"
+                    ? rootNode.getDescendants()
+                    : [];
+
+            const match =
+                descendants.find(
+                    descendant =>
+                        descendant.name === name ||
+                        descendant.name.endsWith(
+                            `_${name}`
+                        )
+                );
+
+            if (match)
+            {
+                return match;
+            }
+        }
+
+        return null;
     }
 
     async loadCharacter(characterName)
@@ -126,7 +274,11 @@ export class AssetManager
         const model =
             this.models.get(name);
 
-        if (model.meshes)
+        if (typeof model.dispose === "function")
+        {
+            model.dispose();
+        }
+        else if (model.meshes)
         {
             for (const mesh of model.meshes)
             {
