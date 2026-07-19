@@ -45,6 +45,7 @@ export const Config =
             HeightScale: 8,
             NoiseFrequency: 0.015,
             HillSmoothness: 0.8,
+            HeightScale: 5.5,
             Materials:
             {
                 Grass: [0.18, 0.38, 0.12],

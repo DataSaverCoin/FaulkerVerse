@@ -116,6 +116,14 @@ export class TerrainManager
         let height =
             (broadLandforms + gentleDetail) *
             terrainConfig.HeightScale;
+        const scale = Config.World.Terrain.HeightScale;
+        let height =
+            Math.sin((x + 31) * 0.018) * 0.48 +
+            Math.cos((z - 17) * 0.021) * 0.38 +
+            Math.sin((x + z) * 0.011) * 0.28 +
+            Math.cos((x - z) * 0.032) * 0.12;
+
+        height *= scale;
 
         for (const area of Config.World.Environment.WaterAreas)
         {
@@ -126,6 +134,9 @@ export class TerrainManager
             if (distance < 4.0)
             {
                 const blend = this.smoothstep(4.0, 0.25, distance);
+            if (distance < 1.65)
+            {
+                const blend = this.smoothstep(1.65, 0.45, distance);
                 const basin = Config.World.Terrain.WaterLevel - 0.75;
                 height = BABYLON.Scalar.Lerp(height, basin, blend);
             }
