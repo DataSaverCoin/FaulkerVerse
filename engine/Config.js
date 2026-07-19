@@ -70,7 +70,6 @@ export const Config =
             Counts:
             {
                 Trees: 150,
-                Trees: 70,
                 Bushes: 48,
                 SmallRocks: 70,
                 LargeRocks: 22,
@@ -91,7 +90,7 @@ export const Config =
                     { x: 125, z: 36 },
                     { x: 168, z: 8 }
                 ]
-            }
+            },
             WaterAreas:
             [
                 { x: 58, z: -46, radius: 20 },

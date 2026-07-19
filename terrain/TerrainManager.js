@@ -165,14 +165,6 @@ export class TerrainManager
         let height =
             (broadLandforms + gentleDetail) *
             terrainConfig.HeightScale;
-        const scale = Config.World.Terrain.HeightScale;
-        let height =
-            Math.sin((x + 31) * 0.018) * 0.48 +
-            Math.cos((z - 17) * 0.021) * 0.38 +
-            Math.sin((x + z) * 0.011) * 0.28 +
-            Math.cos((x - z) * 0.032) * 0.12;
-
-        height *= scale;
 
         for (const area of Config.World.Environment.WaterAreas)
         {
