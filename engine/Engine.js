@@ -141,7 +141,8 @@ export class Engine
         this.player =
             new Player(
                 this.world.scene,
-                this.input
+                this.input,
+                this.assetManager
             );
     }
 
