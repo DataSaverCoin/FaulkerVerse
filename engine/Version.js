@@ -15,22 +15,24 @@ Purpose:
 
 "use strict";
 
+import { BuildInfo } from "./build-info.generated.js";
+
 const buildOverrides =
     globalThis.FAULKERVERSE_BUILD || {};
 
 export const Version = Object.freeze(
     {
-        Number: "0.8.1",
-        Sprint: "Sprint 8.1",
+        Number: "0.9.1",
+        Sprint: "Sprint 9.1",
         Branch:
             buildOverrides.branch ||
-            "development",
+            BuildInfo.branch,
         Commit:
             buildOverrides.commit ||
-            "local",
+            BuildInfo.commit,
         BuildDate:
             buildOverrides.date ||
-            "2026-07-19",
+            BuildInfo.date,
 
         get Label()
         {

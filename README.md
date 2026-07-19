@@ -40,6 +40,26 @@ Engine
 
 # Sprint Progress
 
+## Sprint 9.1 — Build Identification
+
+Completed
+
+- Centralized Sprint 9.1 version metadata
+- Generated Git branch, commit, and UTC build timestamp
+- Build details displayed in the Developer HUD and startup log
+
+Before packaging or deploying the game, refresh the generated build
+information from the repository root:
+
+```sh
+./generate-build-info.sh
+```
+
+The game remains directly runnable as ES modules; the generated file is
+committed so a fresh checkout does not require a build step.
+
+---
+
 ## Sprint 1 — Engine Foundation
 
 Completed

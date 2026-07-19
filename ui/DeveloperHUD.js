@@ -60,6 +60,21 @@ FaulkerVerse Developer HUD
 </div>
 
 <div class="hudRow">
+<span>Branch</span>
+<span>${Version.Branch}</span>
+</div>
+
+<div class="hudRow">
+<span>Commit</span>
+<span>${Version.Commit}</span>
+</div>
+
+<div class="hudRow">
+<span>Built</span>
+<span>${Version.BuildDate}</span>
+</div>
+
+<div class="hudRow">
 <span>FPS</span>
 <span id="hudFPS">0</span>
 </div>
