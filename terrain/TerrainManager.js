@@ -98,6 +98,24 @@ export class TerrainManager
 
     getHeight(x, z)
     {
+        const terrainConfig = Config.World.Terrain;
+        const frequency = terrainConfig.NoiseFrequency;
+        const smoothness = Math.max(
+            0,
+            Math.min(1, terrainConfig.HillSmoothness)
+        );
+        const seedOffset = terrainConfig.Seed * 0.01;
+        const broadLandforms =
+            Math.sin((x + seedOffset) * frequency) * 0.52 +
+            Math.cos((z - seedOffset * 0.7) * frequency * 0.82) * 0.44 +
+            Math.sin((x + z + seedOffset * 0.3) * frequency * 0.55) * 0.34;
+        const gentleDetail =
+            Math.cos((x - z - seedOffset) * frequency * 1.6) *
+            0.14 *
+            (1 - smoothness);
+        let height =
+            (broadLandforms + gentleDetail) *
+            terrainConfig.HeightScale;
         const scale = Config.World.Terrain.HeightScale;
         let height =
             Math.sin((x + 31) * 0.018) * 0.48 +
@@ -113,6 +131,9 @@ export class TerrainManager
             const dz = (z - area.z) / (area.radius * 0.72);
             const distance = Math.sqrt(dx * dx + dz * dz);
 
+            if (distance < 4.0)
+            {
+                const blend = this.smoothstep(4.0, 0.25, distance);
             if (distance < 1.65)
             {
                 const blend = this.smoothstep(1.65, 0.45, distance);

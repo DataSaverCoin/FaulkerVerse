@@ -42,6 +42,9 @@ export const Config =
             Subdivisions: 160,
             Seed: 8128,
             WaterLevel: -1.0,
+            HeightScale: 8,
+            NoiseFrequency: 0.015,
+            HillSmoothness: 0.8,
             HeightScale: 5.5,
             Materials:
             {
