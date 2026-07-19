@@ -53,6 +53,12 @@ export const Config =
             TextureSize: 128,
             TextureScale: 18,
             PatchCount: 24,
+            PatchMinRadius: 4,
+            PatchMaxRadius: 22,
+            Seed: 8128,
+            Materials:
+            {
+                Grass: [0.22, 0.45, 0.15],
             PatchMinRadius: 5,
             PatchMaxRadius: 18,
             Seed: 8128,
@@ -73,6 +79,10 @@ export const Config =
             SpawnClearRadius: 18,
             Counts:
             {
+                Trees: 82,
+                Bushes: 48,
+                SmallRocks: 82,
+                LargeRocks: 26,
                 Trees: 70,
                 Bushes: 48,
                 SmallRocks: 70,
