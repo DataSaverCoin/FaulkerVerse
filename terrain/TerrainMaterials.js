@@ -96,6 +96,11 @@ export class TerrainMaterials
             grassColor[channel] * naturalGrass +
             colors.Dirt[channel] * (dirt + grass * exposedSoil) +
             colors.Rock[channel] * (rock + grass * rockField) +
+
+        return [0, 1, 2].map(channel =>
+            colors.Grass[channel] * grass +
+            colors.Dirt[channel] * dirt +
+            colors.Rock[channel] * rock +
             colors.Mud[channel] * mud
         );
     }
@@ -105,7 +110,14 @@ export class TerrainMaterials
         return (
             Math.sin(x * 0.037 + z * 0.013) * 0.55 +
             Math.cos(z * 0.029 - x * 0.011) * 0.45
+    smoothstep(edge0, edge1, value)
+    {
+        const amount = Math.max(
+            0,
+            Math.min(1, (value - edge0) / (edge1 - edge0))
         );
+
+        return amount * amount * (3 - 2 * amount);
     }
 
     smoothstep(edge0, edge1, value)
