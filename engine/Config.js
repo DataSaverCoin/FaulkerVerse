@@ -23,26 +23,15 @@ export const Config =
     },
 
     Camera:
-{
-    //
-    // Third-person follow camera.
-    //
-
-    Distance: 8,
-
-    MinDistance: 5,
-
-    MaxDistance: 16,
-
-    Pitch:
-        Math.PI / 4,
-
-    TargetHeight: 1.75,
-
-    FollowSpeed: 10.0,
-
-    ZoomSpeed: 0.02
-},
+    {
+        Distance: 8,
+        MinDistance: 5,
+        MaxDistance: 16,
+        Pitch: Math.PI / 4,
+        TargetHeight: 1.75,
+        FollowSpeed: 10.0,
+        ZoomSpeed: 0.02
+    },
 
     World:
     {
@@ -50,18 +39,10 @@ export const Config =
 
         Terrain:
         {
-            TextureSize: 128,
-            TextureScale: 18,
-            PatchCount: 24,
-            PatchMinRadius: 4,
-            PatchMaxRadius: 22,
+            Subdivisions: 160,
             Seed: 8128,
-            Materials:
-            {
-                Grass: [0.22, 0.45, 0.15],
-            PatchMinRadius: 5,
-            PatchMaxRadius: 18,
-            Seed: 8128,
+            WaterLevel: -1.0,
+            HeightScale: 5.5,
             Materials:
             {
                 Grass: [0.18, 0.38, 0.12],
@@ -79,10 +60,6 @@ export const Config =
             SpawnClearRadius: 18,
             Counts:
             {
-                Trees: 82,
-                Bushes: 48,
-                SmallRocks: 82,
-                LargeRocks: 26,
                 Trees: 70,
                 Bushes: 48,
                 SmallRocks: 70,
@@ -92,35 +69,15 @@ export const Config =
             },
             WaterAreas:
             [
-                {
-                    x: 58,
-                    z: -46,
-                    radius: 20
-                },
-                {
-                    x: -72,
-                    z: 64,
-                    radius: 14
-                }
+                { x: 58, z: -46, radius: 20 },
+                { x: -72, z: 64, radius: 14 }
             ]
         }
     },
 
     Colors:
     {
-        Sky:
-        {
-            r: 0.53,
-            g: 0.81,
-            b: 0.98,
-            a: 1.0
-        },
-
-        Ground:
-        {
-            r: 0.18,
-            g: 0.38,
-            b: 0.12
-        }
+        Sky: { r: 0.53, g: 0.81, b: 0.98, a: 1.0 },
+        Ground: { r: 0.18, g: 0.38, b: 0.12 }
     }
 };
