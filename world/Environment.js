@@ -69,7 +69,7 @@ export class Environment
             water.rotation.x = Math.PI / 2;
             water.position.set(
                 area.x,
-                0.06,
+                Config.World.Terrain.WaterLevel,
                 area.z
             );
             water.scaling.set(
@@ -105,41 +105,54 @@ export class Environment
             ["GrassClump", counts.GrassClumps, position => this.scenery.createGrassClump(position)]
         ];
 
+        const occupied = [];
+
         for (const [name, count, create] of definitions)
         {
             this.scatter(
                 name,
                 count,
-                create
+                create,
+                occupied
             );
         }
     }
 
-    scatter(name, count, create)
+    scatter(name, count, create, occupied)
     {
         for (let index = 0; index < count; index += 1)
         {
-            const position = this.findSpawnPosition();
+            const position = this.findSpawnPosition(name, occupied);
 
             if (position)
             {
                 const object = create(position);
                 object.name = `${name}${index}`;
+                occupied.push({
+                    position,
+                    spacing: this.getSpacing(name)
+                });
             }
         }
     }
 
-    findSpawnPosition()
+    findSpawnPosition(name, occupied)
     {
-        for (let attempt = 0; attempt < 12; attempt += 1)
+        for (let attempt = 0; attempt < 30; attempt += 1)
         {
             const position =
                 this.randomPosition(
                     Config.World.Environment.SpawnRadius
                 );
+            const sample = this.terrain.sample(position.x, position.z);
 
-            if (!this.isExcluded(position))
+            if (
+                !this.isExcluded(position, sample) &&
+                this.acceptTerrain(name, sample) &&
+                this.hasSpacing(position, name, occupied)
+            )
             {
+                position.y = sample.height;
                 return position;
             }
         }
@@ -147,7 +160,7 @@ export class Environment
         return null;
     }
 
-    isExcluded(position)
+    isExcluded(position, sample)
     {
         if (
             position.length() <
@@ -157,24 +170,53 @@ export class Environment
             return true;
         }
 
-        return Config.World.Environment.WaterAreas.some(
-            area =>
-            {
-                const x = position.x - area.x;
-                const z = position.z - area.z;
+        return sample.isWater;
+    }
 
-                return Math.sqrt(x * x + z * z) <
-                    area.radius + 5;
-            }
-        );
+    acceptTerrain(name, sample)
+    {
+        const preferences = {
+            Tree: sample.slope < 0.18 ? 0.82 : 0.05,
+            Bush: sample.height < 2.0 && sample.slope < 0.28 ? 0.78 : 0.18,
+            SmallRock: sample.slope > 0.10 ? 0.82 : 0.22,
+            LargeRock: sample.slope > 0.14 ? 0.88 : 0.12,
+            FallenLog: sample.slope < 0.14 ? 0.78 : 0.08,
+            GrassClump: sample.slope < 0.38 ? 0.90 : 0.35
+        };
+
+        return this.random() < preferences[name];
+    }
+
+    hasSpacing(position, name, occupied)
+    {
+        const spacing = this.getSpacing(name);
+
+        return occupied.every(item =>
+        {
+            const dx = position.x - item.position.x;
+            const dz = position.z - item.position.z;
+            const distanceSquared = dx * dx + dz * dz;
+            const required = Math.min(spacing, item.spacing);
+
+            return distanceSquared > required * required;
+        });
+    }
+
+    getSpacing(name)
+    {
+        return {
+            Tree: 8,
+            Bush: 3,
+            SmallRock: 2.5,
+            LargeRock: 6,
+            FallenLog: 5,
+            GrassClump: 1.5
+        }[name];
     }
 
     update(deltaSeconds)
     {
-        const waterTexture =
-            this.terrain.getMaterial(
-                "Water"
-            ).diffuseTexture;
+        const waterTexture = this.terrain.getMaterial("Water").diffuseTexture;
 
         if (!waterTexture)
         {
