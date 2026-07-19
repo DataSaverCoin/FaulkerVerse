@@ -49,7 +49,7 @@ export class Lighting
                 this.scene
             );
 
-        this.ambientLight.intensity = 0.68;
+        this.ambientLight.intensity = 0.58;
         this.ambientLight.diffuse =
             new BABYLON.Color3(
                 0.78,
@@ -83,12 +83,12 @@ export class Lighting
                 180,
                 90
             );
-        this.sun.intensity = 1.2;
+        this.sun.intensity = 1.35;
         this.sun.diffuse =
             new BABYLON.Color3(
                 1.0,
-                0.93,
-                0.78
+                0.84,
+                0.62
             );
 
         this.shadowGenerator =
@@ -97,7 +97,7 @@ export class Lighting
                 this.sun
             );
         this.shadowGenerator.useBlurExponentialShadowMap = true;
-        this.shadowGenerator.blurKernel = 16;
+        this.shadowGenerator.blurKernel = 28;
         this.shadowGenerator.bias = 0.0005;
     }
 
@@ -113,20 +113,34 @@ export class Lighting
                 this.scene
             );
 
-        const skyMaterial =
-            new BABYLON.StandardMaterial(
-                "OutdoorSkyMaterial",
-                this.scene
-            );
-
+        BABYLON.Effect.ShadersStore.outdoorSkyVertexShader = `
+            precision highp float;
+            attribute vec3 position;
+            uniform mat4 worldViewProjection;
+            varying float height;
+            void main(void) {
+                height = normalize(position).y;
+                gl_Position = worldViewProjection * vec4(position, 1.0);
+            }`;
+        BABYLON.Effect.ShadersStore.outdoorSkyFragmentShader = `
+            precision highp float;
+            varying float height;
+            void main(void) {
+                vec3 horizon = vec3(0.93, 0.72, 0.48);
+                vec3 zenith = vec3(0.26, 0.57, 0.82);
+                float blend = smoothstep(-0.12, 0.72, height);
+                gl_FragColor = vec4(mix(horizon, zenith, blend), 1.0);
+            }`;
+        const skyMaterial = new BABYLON.ShaderMaterial(
+            "OutdoorSkyMaterial",
+            this.scene,
+            { vertex: "outdoorSky", fragment: "outdoorSky" },
+            {
+                attributes: ["position"],
+                uniforms: ["worldViewProjection"]
+            }
+        );
         skyMaterial.backFaceCulling = false;
-        skyMaterial.disableLighting = true;
-        skyMaterial.emissiveColor =
-            new BABYLON.Color3(
-                Config.Colors.Sky.r,
-                Config.Colors.Sky.g,
-                Config.Colors.Sky.b
-            );
 
         this.sky.material =
             skyMaterial;
@@ -139,12 +153,12 @@ export class Lighting
     {
         this.scene.fogMode =
             BABYLON.Scene.FOGMODE_EXP2;
-        this.scene.fogDensity = 0.0022;
+        this.scene.fogDensity = 0.0017;
         this.scene.fogColor =
             new BABYLON.Color3(
-                Config.Colors.Sky.r,
-                Config.Colors.Sky.g,
-                Config.Colors.Sky.b
+                0.72,
+                0.72,
+                0.63
             );
         this.scene.ambientColor =
             new BABYLON.Color3(

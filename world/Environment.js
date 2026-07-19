@@ -53,8 +53,11 @@ export class Environment
 
     createWaterAreas()
     {
-        for (const [index, area] of Config.World.Environment.WaterAreas.entries())
+        const waterway = Config.World.Environment.Waterway;
+        const path = waterway.Points.map((point, index) =>
         {
+            const width = waterway.Width * (
+                0.78 + Math.sin(index * 2.1) * 0.20
             const water =
                 BABYLON.MeshBuilder.CreateDisc(
                     `WaterArea${index}`,
@@ -72,24 +75,40 @@ export class Environment
                 Config.World.Terrain.WaterLevel,
                 area.z
             );
-            water.scaling.set(
-                area.radius,
-                area.radius * 0.72,
-                1
-            );
-            water.material =
-                this.terrain.getMaterial(
-                    "Water"
-                );
-            water.checkCollisions = true;
-            water.receiveShadows = true;
-            water.metadata = {
-                terrainType: "Water",
-                swimmingEnabled: false
-            };
 
-            this.waterAreas.push(water);
-        }
+            return [
+                new BABYLON.Vector3(
+                    point.x,
+                    Config.World.Terrain.WaterLevel,
+                    point.z - width
+                ),
+                new BABYLON.Vector3(
+                    point.x,
+                    Config.World.Terrain.WaterLevel,
+                    point.z + width
+                )
+            ];
+        });
+        const water = BABYLON.MeshBuilder.CreateRibbon(
+            "WindingWaterway",
+            {
+                pathArray: path,
+                closeArray: false,
+                closePath: false,
+                sideOrientation: BABYLON.Mesh.DOUBLESIDE
+            },
+            this.scene
+        );
+
+        water.parent = this.root;
+        water.material = this.terrain.getMaterial("Water");
+        water.checkCollisions = true;
+        water.receiveShadows = true;
+        water.metadata = {
+            terrainType: "Water",
+            swimmingEnabled: false
+        };
+        this.waterAreas.push(water);
     }
 
     scatterEnvironment()
@@ -145,6 +164,7 @@ export class Environment
                     Config.World.Environment.SpawnRadius
                 );
             const sample = this.terrain.sample(position.x, position.z);
+            sample.habitat = this.getHabitat(position.x, position.z);
 
             if (
                 !this.isExcluded(position, sample) &&
@@ -175,6 +195,18 @@ export class Environment
 
     acceptTerrain(name, sample)
     {
+        const habitat = sample.habitat;
+        const preferences = {
+            Tree: sample.slope < 0.22 ? habitat.forest : 0.02,
+            Bush: sample.height < 4.0 && sample.slope < 0.28
+                ? 0.35 + habitat.forest * 0.55
+                : 0.10,
+            SmallRock: sample.slope > 0.10
+                ? 0.45 + habitat.rocky * 0.5
+                : habitat.rocky * 0.45,
+            LargeRock: sample.slope > 0.14
+                ? 0.55 + habitat.rocky * 0.4
+                : habitat.rocky * 0.30,
         const preferences = {
             Tree: sample.slope < 0.18 ? 0.82 : 0.05,
             Bush: sample.height < 2.0 && sample.slope < 0.28 ? 0.78 : 0.18,
@@ -205,6 +237,7 @@ export class Environment
     getSpacing(name)
     {
         return {
+            Tree: 5,
             Tree: 8,
             Bush: 3,
             SmallRock: 2.5,
@@ -212,6 +245,23 @@ export class Environment
             FallenLog: 5,
             GrassClump: 1.5
         }[name];
+    }
+
+    getHabitat(x, z)
+    {
+        const forestSignal =
+            Math.sin(x * 0.018 + z * 0.007) * 0.55 +
+            Math.cos(z * 0.022 - x * 0.005) * 0.45;
+        const clearingSignal = Math.sin(x * 0.031 - z * 0.027);
+
+        return {
+            forest: forestSignal > 0.28
+                ? 0.94
+                : (forestSignal > -0.15 ? 0.34 : 0.035),
+            rocky: clearingSignal > 0.55 && forestSignal < 0.15
+                ? 0.90
+                : 0.12
+        };
     }
 
     update(deltaSeconds)

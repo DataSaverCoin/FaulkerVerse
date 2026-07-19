@@ -72,6 +72,30 @@ export class TerrainMaterials
         const dirt = this.smoothstep(0.07, 0.20, sample.slope) * (1 - rock);
         const mud = (1 - lowland) * (1 - rock) * (1 - dirt);
         const grass = Math.max(0, 1 - rock - dirt - mud);
+        const patch = this.surfacePattern(sample.x, sample.z);
+        let grassColor = colors.Grass;
+
+        if (patch < -0.48)
+        {
+            grassColor = colors.DarkGrass;
+        }
+        else if (patch > 0.55)
+        {
+            grassColor = colors.LightGrass;
+        }
+        else if (patch > 0.39 && patch < 0.48)
+        {
+            grassColor = colors.Wildflowers;
+        }
+
+        const exposedSoil = patch < -0.67 && sample.slope < 0.15 ? 0.28 : 0;
+        const rockField = patch > 0.72 && sample.height > 1 ? 0.32 : 0;
+        const naturalGrass = grass * (1 - exposedSoil - rockField);
+
+        return [0, 1, 2].map(channel =>
+            grassColor[channel] * naturalGrass +
+            colors.Dirt[channel] * (dirt + grass * exposedSoil) +
+            colors.Rock[channel] * (rock + grass * rockField) +
 
         return [0, 1, 2].map(channel =>
             colors.Grass[channel] * grass +
@@ -79,6 +103,21 @@ export class TerrainMaterials
             colors.Rock[channel] * rock +
             colors.Mud[channel] * mud
         );
+    }
+
+    surfacePattern(x, z)
+    {
+        return (
+            Math.sin(x * 0.037 + z * 0.013) * 0.55 +
+            Math.cos(z * 0.029 - x * 0.011) * 0.45
+    smoothstep(edge0, edge1, value)
+    {
+        const amount = Math.max(
+            0,
+            Math.min(1, (value - edge0) / (edge1 - edge0))
+        );
+
+        return amount * amount * (3 - 2 * amount);
     }
 
     smoothstep(edge0, edge1, value)

@@ -81,6 +81,55 @@ export class TerrainManager
 
     sample(x, z)
     {
+        const groundHeight = this.getHeight(x, z);
+        const step = 1.5;
+        const riseX = this.getHeight(x + step, z) - this.getHeight(x - step, z);
+        const riseZ = this.getHeight(x, z + step) - this.getHeight(x, z - step);
+        const slope = Math.sqrt(riseX * riseX + riseZ * riseZ) / (step * 2);
+        const waterDepth = Config.World.Terrain.WaterLevel - groundHeight;
+
+        return {
+            x,
+            z,
+            height: groundHeight,
+            slope,
+            waterDepth,
+            isWater: waterDepth > 0.08
+        };
+    }
+
+    getHeight(x, z)
+    {
+        const terrainConfig = Config.World.Terrain;
+        const frequency = terrainConfig.NoiseFrequency;
+        const smoothness = Math.max(
+            0,
+            Math.min(1, terrainConfig.HillSmoothness)
+        );
+        const seedOffset = terrainConfig.Seed * 0.01;
+        const broadLandforms =
+            Math.sin((x + seedOffset) * frequency) * 0.58 +
+            Math.cos((z - seedOffset * 0.7) * frequency * 0.78) * 0.46 +
+            Math.sin((x * 0.62 + z + seedOffset) * frequency * 0.48) * 0.32;
+        const gentleDetail =
+            Math.cos((x - z - seedOffset) * frequency * 1.6) *
+            0.14 *
+            (1 - smoothness);
+        let terrainHeight =
+            (broadLandforms + gentleDetail) *
+            terrainConfig.HeightScale;
+
+        const waterway = Config.World.Environment.Waterway;
+        const distance = this.getWaterwayDistance(x, z);
+        const basin = Config.World.Terrain.WaterLevel - 0.7;
+        const valleyHeight = basin + Math.max(
+            0,
+            distance - waterway.Width * 0.65
+        ) * 0.18;
+        terrainHeight = Math.min(terrainHeight, valleyHeight);
+
+        return terrainHeight;
+    {
         const height = this.getHeight(x, z);
         const step = 1.5;
         const riseX = this.getHeight(x + step, z) - this.getHeight(x - step, z);
@@ -143,6 +192,43 @@ export class TerrainManager
         }
 
         return height;
+    }
+
+    smoothstep(edge0, edge1, value)
+    {
+        const amount = Math.max(
+            0,
+            Math.min(1, (value - edge0) / (edge1 - edge0))
+        );
+
+        return amount * amount * (3 - 2 * amount);
+    }
+
+    getWaterwayDistance(x, z)
+    {
+        const points = Config.World.Environment.Waterway.Points;
+        let nearest = Number.POSITIVE_INFINITY;
+
+        for (let index = 0; index < points.length - 1; index += 1)
+        {
+            const start = points[index];
+            const end = points[index + 1];
+            const dx = end.x - start.x;
+            const dz = end.z - start.z;
+            const lengthSquared = dx * dx + dz * dz;
+            const amount = Math.max(0, Math.min(1,
+                ((x - start.x) * dx + (z - start.z) * dz) / lengthSquared
+            ));
+            const offsetX = x - (start.x + dx * amount);
+            const offsetZ = z - (start.z + dz * amount);
+            nearest = Math.min(
+                nearest,
+                Math.sqrt(offsetX * offsetX + offsetZ * offsetZ)
+            );
+        }
+
+        return nearest;
+        return this.materials.get(name);
     }
 
     smoothstep(edge0, edge1, value)
