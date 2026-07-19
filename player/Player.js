@@ -15,6 +15,8 @@ Purpose:
 
 "use strict";
 
+import { AnimationController } from "./AnimationController.js";
+
 export class Player
 {
     constructor(scene, input, assetManager)
@@ -33,6 +35,11 @@ export class Player
         this.characterRoot = null;
         this.assetManager =
             assetManager;
+        this.animationController =
+            new AnimationController(
+                this.assetManager,
+                this.input
+            );
 
         this.createCapsule();
         this.loadCharacter();
@@ -106,10 +113,18 @@ export class Player
             -1,
             0
         );
+
+        await this.animationController.initialize(
+            "corey",
+            character.skeletons,
+            character.animationGroups
+        );
     }
 
     update(deltaSeconds)
     {
+        this.animationController.update();
+
         const movement =
             this.input.getMoveVector();
 

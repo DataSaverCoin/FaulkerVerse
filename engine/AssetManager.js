@@ -73,6 +73,11 @@ export class AssetManager
             armatureRoot ||
             instance.rootNodes[0];
 
+        this.bindAnimationGroupsToSkeletons(
+            instance.animationGroups,
+            instance.skeletons
+        );
+
         return {
             root,
             meshes:
@@ -83,6 +88,57 @@ export class AssetManager
             animationGroups:
                 instance.animationGroups
         };
+    }
+
+    bindAnimationGroupsToSkeletons(
+        animationGroups,
+        skeletons
+    )
+    {
+        for (const animationGroup of animationGroups)
+        {
+            for (const targetedAnimation of animationGroup.targetedAnimations)
+            {
+                const transformNode =
+                    this.findSkeletonTransformNode(
+                        skeletons,
+                        targetedAnimation.target.name
+                    );
+
+                if (transformNode)
+                {
+                    targetedAnimation.target =
+                        transformNode;
+                }
+            }
+        }
+    }
+
+    findSkeletonTransformNode(skeletons, name)
+    {
+        for (const skeleton of skeletons)
+        {
+            for (const bone of skeleton.bones)
+            {
+                const transformNode =
+                    bone.getTransformNode();
+
+                if (
+                    transformNode &&
+                    (
+                        transformNode.name === name ||
+                        transformNode.name.endsWith(
+                            `_${name}`
+                        )
+                    )
+                )
+                {
+                    return transformNode;
+                }
+            }
+        }
+
+        return null;
     }
 
     getMeshesFromRootNodes(rootNodes)
