@@ -46,7 +46,54 @@ export const Config =
 
     World:
     {
-        GroundSize: 500
+        GroundSize: 500,
+
+        Terrain:
+        {
+            TextureSize: 128,
+            TextureScale: 18,
+            PatchCount: 24,
+            PatchMinRadius: 5,
+            PatchMaxRadius: 18,
+            Seed: 8128,
+            Materials:
+            {
+                Grass: [0.18, 0.38, 0.12],
+                Dirt: [0.36, 0.24, 0.12],
+                Rock: [0.34, 0.36, 0.34],
+                Mud: [0.20, 0.15, 0.09],
+                Water: [0.08, 0.34, 0.48]
+            }
+        },
+
+        Environment:
+        {
+            Seed: 4217,
+            SpawnRadius: 215,
+            SpawnClearRadius: 18,
+            Counts:
+            {
+                Trees: 70,
+                Bushes: 48,
+                SmallRocks: 70,
+                LargeRocks: 22,
+                FallenLogs: 14,
+                GrassClumps: 110
+            },
+            WaterAreas:
+            [
+                {
+                    x: 58,
+                    z: -46,
+                    radius: 20
+                },
+                {
+                    x: -72,
+                    z: 64,
+                    radius: 14
+                }
+            ]
+        }
     },
 
     Colors:
@@ -61,9 +108,9 @@ export const Config =
 
         Ground:
         {
-            r: 0.55,
-            g: 0.55,
-            b: 0.55
+            r: 0.18,
+            g: 0.38,
+            b: 0.12
         }
     }
 };
