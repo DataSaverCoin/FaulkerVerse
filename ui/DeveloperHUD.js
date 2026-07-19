@@ -55,8 +55,28 @@ FaulkerVerse Developer HUD
 </div>
 
 <div class="hudRow">
-<span>Build</span>
-<span>${Version.ShortLabel}</span>
+<span>Version</span>
+<span>${Version.Number}</span>
+</div>
+
+<div class="hudRow">
+<span>Sprint</span>
+<span>${Version.Sprint}</span>
+</div>
+
+<div class="hudRow">
+<span>Branch</span>
+<span>${Version.Branch}</span>
+</div>
+
+<div class="hudRow">
+<span>Commit</span>
+<span>${Version.Commit}</span>
+</div>
+
+<div class="hudRow">
+<span>Build Date</span>
+<span>${Version.BuildDate}</span>
 </div>
 
 <div class="hudRow">
@@ -80,7 +100,7 @@ FaulkerVerse Developer HUD
 </div>
 
 <div class="hudRow">
-<span>Sprint</span>
+<span>Running</span>
 <span id="hudSprint">OFF</span>
 </div>
 

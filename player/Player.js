@@ -19,10 +19,11 @@ import { AnimationController } from "./AnimationController.js";
 
 export class Player
 {
-    constructor(scene, input, assetManager)
+    constructor(scene, input, assetManager, terrain)
     {
         this.scene = scene;
         this.input = input;
+        this.terrain = terrain;
 
         this.cameraController = null;
 
@@ -30,6 +31,10 @@ export class Player
         this.runSpeed = 14.0;
 
         this.rotationSpeed = 10.0;
+        this.verticalVelocity = 0;
+        this.jumpSpeed = 8.5;
+        this.gravity = 22;
+        this.jumpWasDown = false;
 
         this.mesh = null;
         this.characterRoot = null;
@@ -44,7 +49,6 @@ export class Player
         this.createCapsule();
         this.ready =
             this.loadCharacter();
-        this.loadCharacter();
     }
 
     setCameraController(cameraController)
@@ -135,6 +139,7 @@ export class Player
             movement.z === 0
         )
         {
+            this.updateVerticalMovement(deltaSeconds);
             return;
         }
 
@@ -166,6 +171,7 @@ export class Player
 
         if (direction.lengthSquared() === 0)
         {
+            this.updateVerticalMovement(deltaSeconds);
             return;
         }
 
@@ -199,6 +205,40 @@ export class Player
                     deltaSeconds
                 )
             );
+
+        this.updateVerticalMovement(deltaSeconds);
+    }
+
+    updateVerticalMovement(deltaSeconds)
+    {
+        const groundHeight = this.terrain.getHeight(
+            this.mesh.position.x,
+            this.mesh.position.z
+        ) + 1;
+        const jumpIsDown = this.input.isDown("Space");
+        const jumpStarted = jumpIsDown && !this.jumpWasDown;
+        const grounded = this.mesh.position.y <= groundHeight + 0.05;
+
+        this.jumpWasDown = jumpIsDown;
+
+        if (jumpStarted && grounded)
+        {
+            this.verticalVelocity = this.jumpSpeed;
+        }
+
+        this.verticalVelocity -= this.gravity * deltaSeconds;
+        this.mesh.position.y += this.verticalVelocity * deltaSeconds;
+
+        const updatedGroundHeight = this.terrain.getHeight(
+            this.mesh.position.x,
+            this.mesh.position.z
+        ) + 1;
+
+        if (this.mesh.position.y <= updatedGroundHeight)
+        {
+            this.mesh.position.y = updatedGroundHeight;
+            this.verticalVelocity = 0;
+        }
     }
 
     get position()

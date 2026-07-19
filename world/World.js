@@ -48,15 +48,6 @@ export class World
         this.createEnvironment();
         this.createCamera();
 
-        this.scene.onBeforeRenderObservable.add(
-            () =>
-            {
-                this.environment.update(
-                    this.engine.getDeltaTime() /
-                    1000
-                );
-            }
-        );
     }
 
     createScene()
@@ -104,14 +95,6 @@ export class World
             this.terrain.ground;
 
         finishTerrainStartup();
-        this.terrain =
-            new TerrainManager(
-                this.scene
-            );
-
-        this.terrain.initialize();
-        this.ground =
-            this.terrain.ground;
     }
 
     createEnvironment()
@@ -173,6 +156,10 @@ export class World
 
         this.camera.wheelDeltaPercentage =
             Config.Camera.ZoomSpeed;
+
+        this.camera.checkCollisions = true;
+        this.camera.collisionRadius =
+            new BABYLON.Vector3(0.6, 0.6, 0.6);
 
         this.camera.attachControl(
             this.canvas,

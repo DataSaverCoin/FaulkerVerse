@@ -20,8 +20,8 @@ const buildOverrides =
 
 export const Version = Object.freeze(
     {
-        Number: "0.8.1",
-        Sprint: "Sprint 8.1",
+        Number: "0.9.1",
+        Sprint: "Sprint 9.1",
         Branch:
             buildOverrides.branch ||
             "development",
@@ -30,7 +30,7 @@ export const Version = Object.freeze(
             "local",
         BuildDate:
             buildOverrides.date ||
-            "2026-07-19",
+            "local",
 
         get Label()
         {

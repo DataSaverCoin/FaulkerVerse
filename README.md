@@ -137,3 +137,11 @@ Each sprint follows the same process:
 4. Return complete replacement files only.
 5. Verify functionality.
 6. Commit and tag the sprint.
+
+## Build Information
+
+Run `./generate-build-info.sh` before packaging or deploying the game. The script
+reads the current Git branch and short commit hash and writes them to
+`engine/build-info.generated.js`, which is displayed in both the browser console
+and Developer HUD. Detached CI builds use `GITHUB_HEAD_REF` or `GITHUB_REF_NAME`
+when available. Direct local launches use the checked-in development fallback.

@@ -41,7 +41,7 @@ export class Entity
         this.scene = scene;
     }
 
-    update(deltaSeconds)
+    update()
     {
         // Base implementation.
     }
