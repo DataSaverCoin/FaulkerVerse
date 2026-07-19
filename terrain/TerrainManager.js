@@ -128,72 +128,25 @@ export class TerrainManager
         ) * 0.18;
         terrainHeight = Math.min(terrainHeight, valleyHeight);
 
-        return terrainHeight;
-    {
-        const height = this.getHeight(x, z);
-        const step = 1.5;
-        const riseX = this.getHeight(x + step, z) - this.getHeight(x - step, z);
-        const riseZ = this.getHeight(x, z + step) - this.getHeight(x, z - step);
-        const slope = Math.sqrt(riseX * riseX + riseZ * riseZ) / (step * 2);
-        const waterDepth = Config.World.Terrain.WaterLevel - height;
-
-        return {
-            height,
-            slope,
-            waterDepth,
-            isWater: waterDepth > 0.08
-        };
-    }
-
-    getHeight(x, z)
-    {
-        const terrainConfig = Config.World.Terrain;
-        const frequency = terrainConfig.NoiseFrequency;
-        const smoothness = Math.max(
-            0,
-            Math.min(1, terrainConfig.HillSmoothness)
-        );
-        const seedOffset = terrainConfig.Seed * 0.01;
-        const broadLandforms =
-            Math.sin((x + seedOffset) * frequency) * 0.52 +
-            Math.cos((z - seedOffset * 0.7) * frequency * 0.82) * 0.44 +
-            Math.sin((x + z + seedOffset * 0.3) * frequency * 0.55) * 0.34;
-        const gentleDetail =
-            Math.cos((x - z - seedOffset) * frequency * 1.6) *
-            0.14 *
-            (1 - smoothness);
-        let height =
-            (broadLandforms + gentleDetail) *
-            terrainConfig.HeightScale;
-
         for (const area of Config.World.Environment.WaterAreas)
         {
             const dx = (x - area.x) / area.radius;
             const dz = (z - area.z) / (area.radius * 0.72);
-            const distance = Math.sqrt(dx * dx + dz * dz);
+            const areaDistance = Math.sqrt(dx * dx + dz * dz);
 
-            if (distance < 4.0)
+            if (areaDistance < 1.65)
             {
-                const blend = this.smoothstep(4.0, 0.25, distance);
-            if (distance < 1.65)
-            {
-                const blend = this.smoothstep(1.65, 0.45, distance);
-                const basin = Config.World.Terrain.WaterLevel - 0.75;
-                height = BABYLON.Scalar.Lerp(height, basin, blend);
+                const blend = this.smoothstep(1.65, 0.45, areaDistance);
+                const areaBasin = Config.World.Terrain.WaterLevel - 0.75;
+                terrainHeight = BABYLON.Scalar.Lerp(
+                    terrainHeight,
+                    areaBasin,
+                    blend
+                );
             }
         }
 
-        return height;
-    }
-
-    smoothstep(edge0, edge1, value)
-    {
-        const amount = Math.max(
-            0,
-            Math.min(1, (value - edge0) / (edge1 - edge0))
-        );
-
-        return amount * amount * (3 - 2 * amount);
+        return terrainHeight;
     }
 
     getWaterwayDistance(x, z)
@@ -220,7 +173,6 @@ export class TerrainManager
         }
 
         return nearest;
-        return this.materials.get(name);
     }
 
     smoothstep(edge0, edge1, value)

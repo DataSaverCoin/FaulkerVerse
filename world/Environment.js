@@ -58,22 +58,6 @@ export class Environment
         {
             const width = waterway.Width * (
                 0.78 + Math.sin(index * 2.1) * 0.20
-            const water =
-                BABYLON.MeshBuilder.CreateDisc(
-                    `WaterArea${index}`,
-                    {
-                        radius: 1,
-                        tessellation: 64
-                    },
-                    this.scene
-                );
-
-            water.parent = this.root;
-            water.rotation.x = Math.PI / 2;
-            water.position.set(
-                area.x,
-                Config.World.Terrain.WaterLevel,
-                area.z
             );
 
             return [
@@ -109,6 +93,39 @@ export class Environment
             swimmingEnabled: false
         };
         this.waterAreas.push(water);
+
+        for (const [index, area] of Config.World.Environment.WaterAreas.entries())
+        {
+            const waterArea = BABYLON.MeshBuilder.CreateDisc(
+                `WaterArea${index}`,
+                {
+                    radius: 1,
+                    tessellation: 64
+                },
+                this.scene
+            );
+
+            waterArea.parent = this.root;
+            waterArea.rotation.x = Math.PI / 2;
+            waterArea.position.set(
+                area.x,
+                Config.World.Terrain.WaterLevel,
+                area.z
+            );
+            waterArea.scaling.set(
+                area.radius,
+                area.radius * 0.72,
+                1
+            );
+            waterArea.material = this.terrain.getMaterial("Water");
+            waterArea.checkCollisions = true;
+            waterArea.receiveShadows = true;
+            waterArea.metadata = {
+                terrainType: "Water",
+                swimmingEnabled: false
+            };
+            this.waterAreas.push(waterArea);
+        }
     }
 
     scatterEnvironment()
@@ -207,11 +224,6 @@ export class Environment
             LargeRock: sample.slope > 0.14
                 ? 0.55 + habitat.rocky * 0.4
                 : habitat.rocky * 0.30,
-        const preferences = {
-            Tree: sample.slope < 0.18 ? 0.82 : 0.05,
-            Bush: sample.height < 2.0 && sample.slope < 0.28 ? 0.78 : 0.18,
-            SmallRock: sample.slope > 0.10 ? 0.82 : 0.22,
-            LargeRock: sample.slope > 0.14 ? 0.88 : 0.12,
             FallenLog: sample.slope < 0.14 ? 0.78 : 0.08,
             GrassClump: sample.slope < 0.38 ? 0.90 : 0.35
         };
@@ -238,7 +250,6 @@ export class Environment
     {
         return {
             Tree: 5,
-            Tree: 8,
             Bush: 3,
             SmallRock: 2.5,
             LargeRock: 6,
