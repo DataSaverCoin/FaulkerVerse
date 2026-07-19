@@ -23,26 +23,15 @@ export const Config =
     },
 
     Camera:
-{
-    //
-    // Third-person follow camera.
-    //
-
-    Distance: 8,
-
-    MinDistance: 5,
-
-    MaxDistance: 16,
-
-    Pitch:
-        Math.PI / 4,
-
-    TargetHeight: 1.75,
-
-    FollowSpeed: 10.0,
-
-    ZoomSpeed: 0.02
-},
+    {
+        Distance: 8,
+        MinDistance: 5,
+        MaxDistance: 16,
+        Pitch: Math.PI / 4,
+        TargetHeight: 1.75,
+        FollowSpeed: 10.0,
+        ZoomSpeed: 0.02
+    },
 
     World:
     {
@@ -50,21 +39,18 @@ export const Config =
 
         Terrain:
         {
-            TextureSize: 128,
-            TextureScale: 18,
-            PatchCount: 24,
-            PatchMinRadius: 4,
-            PatchMaxRadius: 22,
+            Subdivisions: 160,
             Seed: 8128,
-            Materials:
-            {
-                Grass: [0.22, 0.45, 0.15],
-            PatchMinRadius: 5,
-            PatchMaxRadius: 18,
-            Seed: 8128,
+            WaterLevel: -1.0,
+            HeightScale: 15,
+            NoiseFrequency: 0.006,
+            HillSmoothness: 0.9,
             Materials:
             {
                 Grass: [0.18, 0.38, 0.12],
+                DarkGrass: [0.11, 0.29, 0.09],
+                LightGrass: [0.31, 0.49, 0.16],
+                Wildflowers: [0.46, 0.43, 0.18],
                 Dirt: [0.36, 0.24, 0.12],
                 Rock: [0.34, 0.36, 0.34],
                 Mud: [0.20, 0.15, 0.09],
@@ -79,48 +65,34 @@ export const Config =
             SpawnClearRadius: 18,
             Counts:
             {
-                Trees: 82,
-                Bushes: 48,
-                SmallRocks: 82,
-                LargeRocks: 26,
-                Trees: 70,
+                Trees: 150,
                 Bushes: 48,
                 SmallRocks: 70,
                 LargeRocks: 22,
                 FallenLogs: 14,
-                GrassClumps: 110
+                GrassClumps: 170
             },
-            WaterAreas:
-            [
-                {
-                    x: 58,
-                    z: -46,
-                    radius: 20
-                },
-                {
-                    x: -72,
-                    z: 64,
-                    radius: 14
-                }
-            ]
+            Waterway:
+            {
+                Width: 12,
+                Points:
+                [
+                    { x: -155, z: 88 },
+                    { x: -105, z: 69 },
+                    { x: -62, z: 79 },
+                    { x: -18, z: 51 },
+                    { x: 31, z: 58 },
+                    { x: 72, z: 25 },
+                    { x: 125, z: 36 },
+                    { x: 168, z: 8 }
+                ]
+            }
         }
     },
 
     Colors:
     {
-        Sky:
-        {
-            r: 0.53,
-            g: 0.81,
-            b: 0.98,
-            a: 1.0
-        },
-
-        Ground:
-        {
-            r: 0.18,
-            g: 0.38,
-            b: 0.12
-        }
+        Sky: { r: 0.53, g: 0.81, b: 0.98, a: 1.0 },
+        Ground: { r: 0.18, g: 0.38, b: 0.12 }
     }
 };
