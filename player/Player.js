@@ -46,6 +46,8 @@ export class Player
                 this.input
             );
 
+        this.vehicle = null;
+
         this.createCapsule();
         this.ready =
             this.loadCharacter();
@@ -129,6 +131,16 @@ export class Player
 
     update(deltaSeconds)
     {
+        if (this.vehicle)
+        {
+            this.mesh.position.copyFrom(
+                this.vehicle.driverPosition
+            );
+            this.mesh.rotation.y =
+                this.vehicle.rotation.y;
+            return;
+        }
+
         this.animationController.update();
 
         const movement =
@@ -207,6 +219,25 @@ export class Player
             );
 
         this.updateVerticalMovement(deltaSeconds);
+    }
+
+    enterVehicle(vehicle)
+    {
+        this.vehicle = vehicle;
+        this.verticalVelocity = 0;
+        this.mesh.setEnabled(false);
+    }
+
+    exitVehicle(position)
+    {
+        this.vehicle = null;
+        this.mesh.position.copyFrom(position);
+        this.mesh.setEnabled(true);
+    }
+
+    get isDriving()
+    {
+        return this.vehicle !== null;
     }
 
     updateVerticalMovement(deltaSeconds)

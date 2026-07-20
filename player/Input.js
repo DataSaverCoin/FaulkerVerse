@@ -19,11 +19,17 @@ export class Input
     constructor()
     {
         this.keys = new Map();
+        this.pressed = new Set();
 
         window.addEventListener(
             "keydown",
             (event) =>
             {
+                if (!this.keys.get(event.code))
+                {
+                    this.pressed.add(event.code);
+                }
+
                 this.keys.set(
                     event.code,
                     true
@@ -46,6 +52,16 @@ export class Input
     isDown(code)
     {
         return this.keys.get(code) === true;
+    }
+
+    consumePressed(code)
+    {
+        const wasPressed =
+            this.pressed.has(code);
+
+        this.pressed.delete(code);
+
+        return wasPressed;
     }
 
     getMoveVector()

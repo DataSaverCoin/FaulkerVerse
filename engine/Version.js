@@ -22,8 +22,8 @@ const buildOverrides =
 
 export const Version = Object.freeze(
     {
-        Number: "0.9.1",
-        Sprint: "Sprint 9.1",
+        Number: "0.11.0",
+        Sprint: "Sprint 11",
         Branch:
             buildOverrides.branch ||
             BuildInfo.branch,
