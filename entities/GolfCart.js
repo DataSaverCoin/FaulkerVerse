@@ -204,7 +204,7 @@ export class GolfCart
 
     snapToTerrain()
     {
-        this.mesh.position.y = this.terrain.getHeight(
+        this.mesh.position.y = this.terrain.getHeightAt(
             this.mesh.position.x,
             this.mesh.position.z
         );
@@ -233,7 +233,7 @@ export class GolfCart
             -Math.sin(this.mesh.rotation.y)
         );
         const exitPosition = this.mesh.position.add(right.scale(2));
-        exitPosition.y = this.terrain.getHeight(exitPosition.x, exitPosition.z) + 1;
+        exitPosition.y = this.terrain.getHeightAt(exitPosition.x, exitPosition.z) + 1;
         const driver = this.driver;
         this.driver = null;
         driver.exitVehicle(exitPosition);

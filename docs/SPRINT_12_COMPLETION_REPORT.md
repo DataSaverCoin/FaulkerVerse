@@ -1,50 +1,77 @@
-# Sprint 12 Completion Report
+# Sprint 12.1 Completion Report
 
-## Summary of Gameplay Improvements
+## Summary
 
-- Smoothed throttle, braking, reverse transitions, steering, high-speed grip, drag, and vehicle body movement.
-- Added speed-responsive camera distance, steering look-ahead, interpolation, and collision-aware camera configuration.
-- Replaced the immediate play area with a handcrafted downtown-style street block containing a hotel, parking lot, sidewalks, curbs, markings, buildings, trees, lighting, and street furniture.
-- Made pickup and destination guidance distinct, emissive, rotating, pulsing, and visible as tall beacons.
-- Added synthesized engine feedback tied to vehicle speed and throttle, while retaining the existing replaceable cue system.
-- Refined ride completion and wallet feedback without adding persistent HUD clutter.
+Sprint 12.1 makes `TerrainManager.getHeightAt(x, z)` the canonical elevation
+query and integrates the Sprint 12 prototype city block with that API. Roads,
+parking surfaces, sidewalks, curbs, road markings, and lawn panels are now
+tessellated meshes whose vertices follow the procedural terrain. Their visible
+meshes are also their collision meshes, eliminating the separate flat collision
+planes that allowed geometry and ground height to disagree.
 
-## Files Added or Modified
+Buildings now sample their complete footprints. Each building is placed above
+the highest sampled point and receives a foundation down to the lowest sampled
+point, preventing both terrain clipping and floating corners. Street furniture,
+trees, the player, the golf cart, vehicle exits, passengers, and ride markers all
+derive their placement from the same terrain API.
 
-- `world/PrototypeCityBlock.js`: reusable primitive city-block presentation.
-- `world/World.js`: initializes the prototype block through the existing world lifecycle.
-- `entities/GolfCart.js`: driving and vehicle presentation polish without changing its public API.
-- `engine/CameraController.js`, `engine/Config.js`: cinematic vehicle follow behavior.
-- `world/RideSystem.js`: block-aligned routes and clearer navigation markers.
-- `engine/GameplayAudio.js`, `world/GameplaySession.js`: modular speed-responsive engine feedback.
-- `ui/GameplayHUD.js`, `css/style.css`: completion, wallet, spacing, and typography polish.
-- `engine/Version.js`, `engine/build-info.generated.js`: Sprint 12 build metadata.
+## Files Changed
+
+- `terrain/TerrainManager.js` — adds `getHeightAt(x, z)`, routes terrain sampling
+  through it, and retains `getHeight()` as a compatibility alias.
+- `world/PrototypeCityBlock.js` — creates terrain-conforming streets and details,
+  uses matching visible/collision meshes, adds conforming curbs, grounds props,
+  and generates terrain-aware building foundations.
+- `entities/GolfCart.js` — uses the canonical height query for driving and exits.
+- `player/Player.js` — uses the canonical height query for grounding and jumping.
+- `world/RideSystem.js` — uses the canonical height query for passengers, pickup
+  markers, and destination markers.
+- `engine/Version.js` and `engine/build-info.generated.js` — identify the build as
+  version 0.12.1 / Sprint 12.1 and record the feature branch build metadata.
 
 ## Architectural Decisions
 
-- The city block is owned by `World` and samples the existing terrain rather than creating another world or terrain system.
-- Vehicle input remains owned by `Input`, movement remains owned by `GolfCart`, and camera behavior remains isolated in `CameraController`.
-- All art is replaceable BabylonJS primitive geometry and all audio is a replaceable Web Audio placeholder.
-- Existing ride states, wallet behavior, player hiding, entity update loop, and public vehicle methods remain intact.
+- Terrain remains the single elevation authority. Authored city surfaces sample
+  it rather than introducing a second road-height or city-height system.
+- `getHeight()` remains available only to avoid breaking external integrations;
+  updated engine and gameplay code uses `getHeightAt()`.
+- Roads and sidewalks use moderately tessellated custom meshes. This is simpler
+  than terrain deformation, follows the existing procedural terrain closely,
+  and lets the rendered mesh itself own collision.
+- Building foundations handle sloped footprints without modifying the procedural
+  terrain or adding a new world-generation subsystem.
+- Existing ride states, wallet deposits, player/vehicle ownership, camera, HUD,
+  audio, and update orchestration are unchanged.
 
 ## Testing Performed
 
-- JavaScript syntax checks were run across every JavaScript module.
-- A headless state-machine check completed five consecutive rides and validated every transition and accumulated wallet balance.
-- Repository whitespace validation was run with `git diff --check`.
-- Build metadata was regenerated with `generate-build-info.sh`.
+- Ran `node --check` for every JavaScript file in the repository.
+- Ran `git diff --check`.
+- Ran a headless ride-state simulation through five complete rides, including
+  assigned, pickup, onboard, destination, completed, and next-ride states.
+- Confirmed the five simulated fares produce the expected `$98` wallet balance.
+- Checked that updated runtime systems contain no calls to the legacy
+  `.getHeight()` API.
+- Regenerated build metadata with `./generate-build-info.sh`.
 
 ## Known Limitations
 
-- The block is an art-direction prototype, not a geographically exact St. Louis block.
-- Buildings and props use placeholder primitives and do not have interiors.
-- Engine audio begins after the first user interaction because browsers require user activation for Web Audio.
-- The existing heightmap remains authoritative, so flat street meshes visually follow the block's sampled terrain rather than changing terrain physics.
-- No seated animation was available; the existing reliable behavior of hiding the player while driving remains in place.
+- The city remains a handcrafted prototype made from BabylonJS primitives.
+- Conforming surfaces sample terrain on an approximately three-meter grid. This
+  matches the current smooth terrain, but sharper future terrain will require a
+  denser grid or authored terrain-flattening zones.
+- Foundations are simple rectangular concrete volumes and are not architectural
+  facade meshes.
+- Automated browser screenshot tooling is not installed in the current build
+  environment, so final visual inspection must also be performed in a browser.
 
-## Suggested Sprint 13 Priorities
+## Recommended Sprint 13 Priorities
 
-1. Add road-aware collision and surface sampling so vehicles drive on authored road elevation.
-2. Replace the most visible hotel and street primitives with optimized modular GLB kits.
-3. Add data-driven ride locations and names so HUD objectives teach recognizable places.
-4. Add a small automated browser smoke-test harness when the project adopts a supported test runtime.
+1. Replace the most visible building and street primitives with optimized modular
+   GLB assets while retaining terrain-aware placement.
+2. Add a small browser smoke-test harness for spawn, enter/exit, and ride-loop
+   validation.
+3. Move ride route coordinates into a data file and add landmark names to HUD
+   objectives.
+4. Add surface metadata only if future gameplay needs material-specific traction,
+   footsteps, or audio; keep elevation owned by `TerrainManager`.

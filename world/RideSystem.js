@@ -206,7 +206,7 @@ export class RideSystem
     {
         return new BABYLON.Vector3(
             point.x,
-            this.terrain.getHeight(point.x, point.z),
+            this.terrain.getHeightAt(point.x, point.z),
             point.z
         );
     }
