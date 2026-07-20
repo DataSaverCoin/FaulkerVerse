@@ -199,7 +199,12 @@ export class Environment
 
     isExcluded(position, sample)
     {
+        const insideDistrict =
+            Math.abs(position.x) < 152 &&
+            Math.abs(position.z) < 68;
+
         if (
+            insideDistrict ||
             position.length() <
             Config.World.Environment.SpawnClearRadius
         )

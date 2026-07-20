@@ -243,7 +243,8 @@ export class Engine
             this.golfCart,
             this.rideSystem,
             this.input,
-            audio
+            audio,
+            this.world.terrain
         );
         this.gameplayHUD = new GameplayHUD(
             this.wallet,

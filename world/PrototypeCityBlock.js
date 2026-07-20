@@ -1,4 +1,4 @@
-/* Handcrafted Sprint 12 downtown block built from replaceable primitives. */
+/* Sprint 13 procedural district built from reusable Babylon primitives. */
 
 "use strict";
 
@@ -9,17 +9,22 @@ export class PrototypeCityBlock
         this.scene = scene;
         this.terrain = terrain;
         this.lighting = lighting;
-        this.root = new BABYLON.TransformNode("PrototypeCityBlock", scene);
+        this.root = new BABYLON.TransformNode("PrototypeDistrict", scene);
         this.materials = new Map();
+        this.sources = new Map();
+        this.blockWidth = 44;
+        this.blockDepth = 46;
+        this.roadWidth = 14;
+        this.columns = 5;
+        this.rows = 2;
     }
 
     initialize()
     {
         this.createMaterials();
-        this.createStreet();
-        this.createBuildings();
-        this.createStreetFurniture();
-        this.createLandscaping();
+        this.createRoadGrid();
+        this.createBlocks();
+        this.hideSources();
     }
 
     createMaterials()
@@ -27,135 +32,212 @@ export class PrototypeCityBlock
         const colors = {
             asphalt: [0.08, 0.09, 0.1], concrete: [0.48, 0.5, 0.48],
             line: [0.92, 0.82, 0.35], white: [0.9, 0.9, 0.84],
-            brick: [0.38, 0.13, 0.09], hotel: [0.68, 0.61, 0.48],
+            brick: [0.38, 0.13, 0.09], sandstone: [0.68, 0.61, 0.48],
             glass: [0.12, 0.3, 0.4], metal: [0.1, 0.12, 0.14],
-            grass: [0.14, 0.35, 0.11], leaves: [0.1, 0.3, 0.09], bark: [0.25, 0.13, 0.06]
+            grass: [0.14, 0.35, 0.11], leaves: [0.1, 0.3, 0.09],
+            bark: [0.25, 0.13, 0.06], gravel: [0.34, 0.32, 0.28]
         };
+
         for (const [name, color] of Object.entries(colors))
         {
-            const material = new BABYLON.StandardMaterial(`City${name}`, this.scene);
+            const material = new BABYLON.StandardMaterial(`District${name}`, this.scene);
             material.diffuseColor = new BABYLON.Color3(...color);
-            material.specularColor = name === "glass" ? new BABYLON.Color3(0.4, 0.5, 0.55) : BABYLON.Color3.Black();
+            material.specularColor = name === "glass"
+                ? new BABYLON.Color3(0.4, 0.5, 0.55)
+                : BABYLON.Color3.Black();
             this.materials.set(name, material);
         }
     }
 
-    createStreet()
+    createRoadGrid()
     {
-        this.terrainSurface("MarketStreet", 18, 112, 0, 0, 0.035, "asphalt", true);
-        this.terrainSurface("WestSidewalk", 7, 112, -12.5, 0, 0.18, "concrete", true);
-        this.terrainSurface("EastSidewalk", 7, 112, 12.5, 0, 0.18, "concrete", true);
-        this.terrainSurface("WestCurb", 0.4, 112, -9.1, 0, 0.11, "concrete", true);
-        this.terrainSurface("EastCurb", 0.4, 112, 9.1, 0, 0.11, "concrete", true);
-        this.terrainSurface("HotelParkingLot", 36, 38, 28, 18, 0.035, "asphalt", true);
+        const pitchX = this.blockWidth + this.roadWidth;
+        const pitchZ = this.blockDepth + this.roadWidth;
+        const districtWidth = this.columns * this.blockWidth + (this.columns + 1) * this.roadWidth;
+        const districtDepth = this.rows * this.blockDepth + (this.rows + 1) * this.roadWidth;
 
-        for (let z = -50; z <= 50; z += 10)
+        for (let column = 0; column <= this.columns; column += 1)
         {
-            this.terrainSurface("LaneDash", 0.24, 5.5, 0, z, 0.055, "line");
+            const x = (column - this.columns / 2) * pitchX;
+            this.terrainSurface(`NorthSouthRoad${column}`, this.roadWidth, districtDepth, x, 0, 0.04, "asphalt", true);
+            this.addLaneDashes(x, -districtDepth / 2 + 5, districtDepth / 2 - 5, false);
         }
-        for (const x of [21, 28, 35])
+
+        for (let row = 0; row <= this.rows; row += 1)
         {
-            this.terrainSurface("ParkingLine", 0.16, 12, x, 18, 0.055, "white");
-        }
-        for (let x = -7; x <= 7; x += 2)
-        {
-            this.terrainSurface("CrosswalkStripe", 1.05, 4, x, -42, 0.055, "white");
+            const z = (row - this.rows / 2) * pitchZ;
+            this.terrainSurface(`EastWestRoad${row}`, districtWidth, this.roadWidth, 0, z, 0.045, "asphalt", true);
+            this.addLaneDashes(z, -districtWidth / 2 + 5, districtWidth / 2 - 5, true);
         }
     }
 
-    createBuildings()
+    addLaneDashes(fixed, start, end, horizontal)
     {
-        this.building("GatewayHotel", [28, 18, 26], [29, -25], "hotel", 6);
-        this.box("HotelCanopy", [12, 0.7, 7], [14.5, 4, -25], "metal", true);
-        this.box("HotelWelcome", [8, 2.1, 0.3], [15, 2.1, -21.7], "glass");
-        this.building("BrickLofts", [25, 24, 30], [-29, -23], "brick", 7);
-        this.building("MarketOffices", [24, 30, 28], [-29, 29], "glass", 8);
-        this.building("ParkingGarage", [28, 13, 25], [31, 43], "concrete", 4);
+        for (let amount = start; amount <= end; amount += 12)
+        {
+            this.terrainSurface(
+                "LaneDash",
+                horizontal ? 6 : 0.22,
+                horizontal ? 0.22 : 6,
+                horizontal ? amount : fixed,
+                horizontal ? fixed : amount,
+                0.065,
+                "line"
+            );
+        }
     }
 
-    building(name, size, position, material, floors)
+    createBlocks()
     {
-        const [x, z] = position;
-        const elevations = this.footprintElevations(x, z, size[0], size[2]);
-        const base = elevations.maximum + 0.04;
-        const foundationHeight = Math.max(0.2, base - elevations.minimum);
+        const layouts = ["buildings", "park", "buildings", "parking", "buildings", "empty", "buildings", "park", "parking", "buildings"];
+        let blockIndex = 0;
 
-        this.absoluteBox(
-            `${name}Foundation`,
-            [size[0] + 0.35, foundationHeight, size[2] + 0.35],
-            [x, base - foundationHeight / 2, z],
-            "concrete",
-            true
-        );
-        this.absoluteBox(name, size, [x, base + size[1] / 2, z], material, true);
-
-        for (let floor = 1; floor < floors; floor += 1)
+        for (let row = 0; row < this.rows; row += 1)
         {
-            const y = base + floor * size[1] / floors;
-            for (const zOffset of [-size[2] / 2 - 0.03, size[2] / 2 + 0.03])
+            for (let column = 0; column < this.columns; column += 1)
             {
-                this.absoluteBox(`${name}Windows`, [size[0] * 0.72, 0.55, 0.08], [x, y, z + zOffset], "glass");
+                const center = this.getBlockCenter(column, row);
+                this.terrainSurface(`Block${blockIndex}Sidewalk`, this.blockWidth, this.blockDepth, center.x, center.z, 0.11, "concrete", true);
+                this.createLot(layouts[blockIndex], center, blockIndex);
+                blockIndex += 1;
             }
         }
     }
 
-    createStreetFurniture()
+    getBlockCenter(column, row)
     {
-        for (const z of [-46, -22, 4, 30, 50])
-        {
-            this.streetlight(-10, z);
-            this.streetlight(10, z + 8);
-        }
-        for (const z of [-34, 14, 40])
-        {
-            this.box("BenchSeat", [2.7, 0.25, 0.7], [-13, 0.9, z], "metal", true);
-            this.box("TrashCan", [0.7, 1.1, 0.7], [-10.8, 0.7, z], "metal", true);
-        }
-        this.box("MarketStreetSign", [2.8, 0.65, 0.15], [9.8, 3.8, -42], "hotel");
-        this.box("StreetSignPost", [0.12, 4, 0.12], [9.8, 2, -42], "metal", true);
+        return {
+            x: (column - (this.columns - 1) / 2) * (this.blockWidth + this.roadWidth),
+            z: (row - (this.rows - 1) / 2) * (this.blockDepth + this.roadWidth)
+        };
     }
 
-    streetlight(x, z)
+    createLot(type, center, index)
     {
-        this.box("StreetlightPole", [0.16, 6.5, 0.16], [x, 3.25, z], "metal", true);
-        const lamp = BABYLON.MeshBuilder.CreateSphere("StreetlightLamp", { diameter: 0.55, segments: 8 }, this.scene);
-        lamp.parent = this.root;
-        lamp.position.set(x, this.terrain.getHeightAt(x, z) + 6.4, z);
-        lamp.material = this.materials.get("white");
+        if (type === "park")
+        {
+            this.createPark(center, index);
+            return;
+        }
+        if (type === "parking")
+        {
+            this.createParkingLot(center, index);
+            return;
+        }
+        if (type === "empty")
+        {
+            this.terrainSurface(`EmptyLot${index}`, 36, 38, center.x, center.z, 0.14, "gravel");
+            return;
+        }
+
+        const materialNames = ["brick", "glass", "sandstone", "concrete"];
+        const setback = 3 + (index % 3) * 2;
+        const split = index % 2 === 0;
+        if (split)
+        {
+            this.building(`Block${index}West`, [15 + index % 4, 13 + index * 1.4, 32 - setback], [center.x - 9, center.z], materialNames[index % 4]);
+            this.building(`Block${index}East`, [14, 18 + (index % 3) * 5, 27], [center.x + 10, center.z + (index % 3 - 1) * 3], materialNames[(index + 1) % 4]);
+        }
+        else
+        {
+            this.building(`Block${index}Tower`, [33 - setback, 18 + index * 1.5, 31 - setback / 2], [center.x, center.z], materialNames[index % 4]);
+        }
     }
 
-    createLandscaping()
+    createPark(center, index)
     {
-        this.terrainSurface("HotelLawn", 10, 32, 49, 18, 0.025, "grass");
-        for (const [x, z] of [[-14, -42], [-14, -8], [-14, 28], [14, -8], [47, 8], [47, 28]])
+        this.terrainSurface(`Park${index}Lawn`, 38, 40, center.x, center.z, 0.14, "grass");
+        this.terrainSurface("ParkPath", 4, 40, center.x, center.z, 0.17, "concrete");
+        this.terrainSurface("ParkPath", 38, 4, center.x, center.z, 0.175, "concrete");
+
+        for (const [xOffset, zOffset] of [[-14, -15], [14, -14], [-14, 14], [14, 15], [-8, 8], [8, -7]])
         {
-            this.tree(x, z);
+            this.tree(center.x + xOffset, center.z + zOffset);
         }
-        for (const z of [-32, -26, -20])
+    }
+
+    createParkingLot(center, index)
+    {
+        this.terrainSurface(`ParkingLot${index}`, 38, 40, center.x, center.z, 0.14, "asphalt", true);
+        for (let xOffset = -15; xOffset <= 15; xOffset += 6)
         {
-            this.box("HotelPlanter", [1.8, 0.65, 1.8], [13, 0.5, z], "concrete", true);
+            for (const zOffset of [-10, 10])
+            {
+                this.terrainSurface("ParkingLine", 0.16, 9, center.x + xOffset, center.z + zOffset, 0.17, "white");
+            }
         }
+    }
+
+    building(name, size, position, material)
+    {
+        const elevations = this.footprintElevations(position[0], position[1], size[0], size[2]);
+        const base = elevations.maximum + 0.15;
+        const foundationHeight = Math.max(0.25, base - elevations.minimum);
+        this.instanceBox(`${name}Foundation`, [size[0] + 0.4, foundationHeight, size[2] + 0.4], [position[0], base - foundationHeight / 2, position[1]], "concrete", true);
+        this.instanceBox(name, size, [position[0], base + size[1] / 2, position[1]], material, true);
     }
 
     tree(x, z)
     {
         const y = this.terrain.getHeightAt(x, z);
-        const trunk = BABYLON.MeshBuilder.CreateCylinder("CityTreeTrunk", { height: 3.5, diameter: 0.45, tessellation: 8 }, this.scene);
-        trunk.parent = this.root;
-        trunk.position.set(x, y + 1.75, z);
-        trunk.material = this.materials.get("bark");
-        trunk.checkCollisions = true;
-        const crown = BABYLON.MeshBuilder.CreateSphere("CityTreeCrown", { diameter: 3.4, segments: 8 }, this.scene);
-        crown.parent = this.root;
-        crown.position.set(x, y + 4.1, z);
-        crown.scaling.y = 0.8;
-        crown.material = this.materials.get("leaves");
+        this.instanceCylinder("ParkTreeTrunk", [0.45, 3.5, 0.45], [x, y + 1.75, z], "bark", true);
+        this.instanceSphere("ParkTreeCrown", [3.4, 2.7, 3.4], [x, y + 4.1, z], "leaves");
+    }
+
+    instanceBox(name, size, position, material, collidable = false)
+    {
+        return this.instancePrimitive("box", name, size, position, material, collidable);
+    }
+
+    instanceCylinder(name, size, position, material, collidable = false)
+    {
+        return this.instancePrimitive("cylinder", name, size, position, material, collidable);
+    }
+
+    instanceSphere(name, size, position, material, collidable = false)
+    {
+        return this.instancePrimitive("sphere", name, size, position, material, collidable);
+    }
+
+    instancePrimitive(type, name, size, position, material, collidable)
+    {
+        const key = `${type}:${material}`;
+        let source = this.sources.get(key);
+        if (!source)
+        {
+            const builders = {
+                box: () => BABYLON.MeshBuilder.CreateBox(`${key}Source`, { size: 1 }, this.scene),
+                cylinder: () => BABYLON.MeshBuilder.CreateCylinder(`${key}Source`, { height: 1, diameter: 1, tessellation: 8 }, this.scene),
+                sphere: () => BABYLON.MeshBuilder.CreateSphere(`${key}Source`, { diameter: 1, segments: 8 }, this.scene)
+            };
+            source = builders[type]();
+            source.parent = this.root;
+            source.material = this.materials.get(material);
+            this.sources.set(key, source);
+        }
+        const instance = source.createInstance(name);
+        instance.position.set(...position);
+        instance.scaling.set(...size);
+        instance.checkCollisions = collidable;
+        if (collidable)
+        {
+            this.lighting.addShadowCaster(instance);
+        }
+        return instance;
+    }
+
+    hideSources()
+    {
+        for (const source of this.sources.values())
+        {
+            source.isVisible = false;
+        }
     }
 
     terrainSurface(name, width, depth, centerX, centerZ, elevation, material, collidable = false)
     {
-        const xSegments = Math.max(1, Math.ceil(width / 3));
-        const zSegments = Math.max(1, Math.ceil(depth / 3));
+        const xSegments = Math.max(1, Math.ceil(width / 4));
+        const zSegments = Math.max(1, Math.ceil(depth / 4));
         const positions = [];
         const indices = [];
         const normals = [];
@@ -173,24 +255,18 @@ export class PrototypeCityBlock
                 uvs.push(xAmount, 1 - zAmount);
             }
         }
-
         for (let zIndex = 0; zIndex < zSegments; zIndex += 1)
         {
             for (let xIndex = 0; xIndex < xSegments; xIndex += 1)
             {
                 const topLeft = zIndex * (xSegments + 1) + xIndex;
                 const bottomLeft = topLeft + xSegments + 1;
-                indices.push(topLeft, bottomLeft, topLeft + 1);
-                indices.push(topLeft + 1, bottomLeft, bottomLeft + 1);
+                indices.push(topLeft, bottomLeft, topLeft + 1, topLeft + 1, bottomLeft, bottomLeft + 1);
             }
         }
-
         BABYLON.VertexData.ComputeNormals(positions, indices, normals);
         const vertexData = new BABYLON.VertexData();
-        vertexData.positions = positions;
-        vertexData.indices = indices;
-        vertexData.normals = normals;
-        vertexData.uvs = uvs;
+        Object.assign(vertexData, { positions, indices, normals, uvs });
         const mesh = new BABYLON.Mesh(name, this.scene);
         vertexData.applyToMesh(mesh);
         mesh.parent = this.root;
@@ -211,31 +287,5 @@ export class PrototypeCityBlock
             }
         }
         return { minimum: Math.min(...heights), maximum: Math.max(...heights) };
-    }
-
-    box(name, size, position, material, collidable = false)
-    {
-        return this.absoluteBox(
-            name,
-            size,
-            [position[0], this.terrain.getHeightAt(position[0], position[2]) + position[1], position[2]],
-            material,
-            collidable
-        );
-    }
-
-    absoluteBox(name, size, position, material, collidable = false)
-    {
-        const mesh = BABYLON.MeshBuilder.CreateBox(name, { width: size[0], height: size[1], depth: size[2] }, this.scene);
-        mesh.parent = this.root;
-        mesh.position.set(...position);
-        mesh.material = this.materials.get(material);
-        mesh.checkCollisions = collidable;
-        mesh.receiveShadows = true;
-        if (collidable)
-        {
-            this.lighting.addShadowCaster(mesh);
-        }
-        return mesh;
     }
 }

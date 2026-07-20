@@ -141,6 +141,23 @@ FaulkerVerse Developer HUD
 <span>Vehicle</span>
 <span id="hudVehicleSpeed">0 mph</span>
 </div>
+
+<hr>
+
+<div class="hudRow">
+<span>F1</span>
+<span>Teleport Block A</span>
+</div>
+
+<div class="hudRow">
+<span>F2</span>
+<span>Teleport Block B</span>
+</div>
+
+<div class="hudRow">
+<span>F3</span>
+<span>Teleport Block C</span>
+</div>
 `;
 
         this.fps =
