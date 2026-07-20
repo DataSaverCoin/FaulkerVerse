@@ -4,7 +4,7 @@
 
 export class GameplaySession
 {
-    constructor(player, cart, rideSystem, input, audio)
+    constructor(player, cart, rideSystem, input, audio, terrain)
     {
         this.name = "Gameplay Session";
         this.player = player;
@@ -12,7 +12,13 @@ export class GameplaySession
         this.rideSystem = rideSystem;
         this.input = input;
         this.audio = audio;
+        this.terrain = terrain;
         this.interactionPrompt = "";
+        this.teleportLocations = [
+            { name: "Block A", x: -116, z: -60 },
+            { name: "Block B", x: 0, z: 0 },
+            { name: "Block C", x: 116, z: 60 }
+        ];
     }
 
     update(deltaSeconds)
@@ -24,7 +30,31 @@ export class GameplaySession
             this.input.isDown("Space")
         );
         this.rideSystem.update(deltaSeconds);
+        this.updateDebugTeleport();
         this.updateInteraction();
+    }
+
+    updateDebugTeleport()
+    {
+        for (let index = 0; index < this.teleportLocations.length; index += 1)
+        {
+            if (!this.input.consumePressed(`F${index + 1}`))
+            {
+                continue;
+            }
+
+            const location = this.teleportLocations[index];
+            const target = this.player.isDriving
+                ? this.cart.position
+                : this.player.position;
+            target.set(
+                location.x,
+                this.terrain.getHeightAt(location.x, location.z) + (this.player.isDriving ? 0 : 1),
+                location.z
+            );
+            this.cart.speed = 0;
+            console.info(`[FaulkerVerse] Teleported to ${location.name}.`);
+        }
     }
 
     updateInteraction()
