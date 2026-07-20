@@ -207,7 +207,9 @@ export class Engine
         this.cameraController =
             new CameraController(
                 this.world.camera,
-                this.player
+                this.player,
+                this.input,
+                this.world.cityBlock
             );
     }
 

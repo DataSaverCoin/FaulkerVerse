@@ -27,10 +27,13 @@ import { Config } from "./Config.js";
 
 export class CameraController
 {
-    constructor(camera, player)
+    constructor(camera, player, input, district)
     {
         this.camera = camera;
         this.player = player;
+        this.input = input;
+        this.district = district;
+        this.districtOverviewActive = false;
 
         this.target =
             player.position.add(
@@ -65,6 +68,16 @@ export class CameraController
     update(deltaSeconds)
     {
         if (!this.camera || !this.player)
+        {
+            return;
+        }
+
+        if (this.input.consumePressed("F8"))
+        {
+            this.frameDistrict();
+        }
+
+        if (this.districtOverviewActive)
         {
             return;
         }
@@ -112,6 +125,21 @@ export class CameraController
             1 - Math.exp(-Config.Camera.DistanceFollowSpeed * deltaSeconds)
         );
         this.camera.radius = this.currentDistance;
+    }
+
+    frameDistrict()
+    {
+        const bounds = this.district.getDistrictBounds();
+        const framingRadius = Math.max(bounds.width, bounds.depth) * 0.58;
+        this.districtOverviewActive = true;
+        this.camera.checkCollisions = false;
+        this.camera.lowerRadiusLimit = framingRadius;
+        this.camera.upperRadiusLimit = framingRadius;
+        this.camera.alpha = -Math.PI / 2;
+        this.camera.beta = 0.01;
+        this.camera.radius = framingRadius;
+        this.camera.setTarget(BABYLON.Vector3.Zero());
+        console.info("[District roads] F8 camera overview active; reload to restore gameplay camera.");
     }
 
     /*

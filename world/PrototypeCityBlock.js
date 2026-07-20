@@ -2,6 +2,8 @@
 
 "use strict";
 
+import { Config } from "../engine/Config.js";
+
 export class PrototypeCityBlock
 {
     constructor(scene, terrain, lighting)
@@ -13,6 +15,8 @@ export class PrototypeCityBlock
         this.materials = new Map();
         this.sources = new Map();
         this.roadMeshes = [];
+        this.buildingMeshes = [];
+        this.blockCenters = [];
         this.blockWidth = 44;
         this.blockDepth = 46;
         this.roadWidth = 14;
@@ -30,10 +34,20 @@ export class PrototypeCityBlock
     initialize()
     {
         this.createMaterials();
+        this.createDebugMaterial();
         this.createRoadGrid();
         this.createBlocks();
         this.hideSources();
         this.logRoadMeshDiagnostics();
+    }
+
+    createDebugMaterial()
+    {
+        const material = new BABYLON.StandardMaterial("DistrictRoadDebug", this.scene);
+        material.diffuseColor = BABYLON.Color3.Red();
+        material.emissiveColor = BABYLON.Color3.Red();
+        material.disableLighting = true;
+        this.materials.set("roadDebug", material);
     }
 
     createMaterials()
@@ -69,20 +83,58 @@ export class PrototypeCityBlock
         for (let column = 0; column <= this.columns; column += 1)
         {
             const x = (column - this.columns / 2) * pitchX;
-            this.roadMeshes.push(
-                this.terrainSurface(`NorthSouthRoad${column}`, this.roadWidth, districtDepth, x, 0, this.surfaceElevations.road, "asphalt", true)
-            );
+            const road = this.terrainSurface(`NorthSouthRoad${column}`, this.roadWidth, districtDepth, x, 0, this.surfaceElevations.road, "asphalt", true);
+            road.metadata = {
+                roadType: "north/south",
+                start: { x, z: -districtDepth / 2 },
+                end: { x, z: districtDepth / 2 },
+                expectedBlocks: this.getNorthSouthRoadBlocks(column)
+            };
+            road.material = Config.DistrictDebug.Enabled
+                ? this.materials.get("roadDebug")
+                : this.materials.get("asphalt");
+            this.roadMeshes.push(road);
             this.addLaneDashes(x, -districtDepth / 2 + 5, districtDepth / 2 - 5, false);
         }
 
         for (let row = 0; row <= this.rows; row += 1)
         {
             const z = (row - this.rows / 2) * pitchZ;
-            this.roadMeshes.push(
-                this.terrainSurface(`EastWestRoad${row}`, districtWidth, this.roadWidth, 0, z, this.surfaceElevations.road, "asphalt", true)
-            );
+            const road = this.terrainSurface(`EastWestRoad${row}`, districtWidth, this.roadWidth, 0, z, this.surfaceElevations.road, "asphalt", true);
+            road.metadata = {
+                roadType: "east/west",
+                start: { x: -districtWidth / 2, z },
+                end: { x: districtWidth / 2, z },
+                expectedBlocks: this.getEastWestRoadBlocks(row)
+            };
+            road.material = Config.DistrictDebug.Enabled
+                ? this.materials.get("roadDebug")
+                : this.materials.get("asphalt");
+            this.roadMeshes.push(road);
             this.addLaneDashes(z, -districtWidth / 2 + 5, districtWidth / 2 - 5, true);
         }
+    }
+
+    getNorthSouthRoadBlocks(column)
+    {
+        const blocks = [];
+        for (let row = 0; row < this.rows; row += 1)
+        {
+            if (column > 0) blocks.push(row * this.columns + column - 1);
+            if (column < this.columns) blocks.push(row * this.columns + column);
+        }
+        return blocks;
+    }
+
+    getEastWestRoadBlocks(row)
+    {
+        const blocks = [];
+        for (let column = 0; column < this.columns; column += 1)
+        {
+            if (row > 0) blocks.push((row - 1) * this.columns + column);
+            if (row < this.rows) blocks.push(row * this.columns + column);
+        }
+        return blocks;
     }
 
     addLaneDashes(fixed, start, end, horizontal)
@@ -111,6 +163,7 @@ export class PrototypeCityBlock
             for (let column = 0; column < this.columns; column += 1)
             {
                 const center = this.getBlockCenter(column, row);
+                this.blockCenters.push({ block: blockIndex, ...center });
                 this.terrainSurface(`Block${blockIndex}Sidewalk`, this.blockWidth, this.blockDepth, center.x, center.z, this.surfaceElevations.sidewalk, "concrete", true);
                 this.createCurbs(center, blockIndex);
                 this.createLot(layouts[blockIndex], center, blockIndex);
@@ -204,7 +257,8 @@ export class PrototypeCityBlock
         const base = elevations.maximum + 0.15;
         const foundationHeight = Math.max(0.25, base - elevations.minimum);
         this.instanceBox(`${name}Foundation`, [size[0] + 0.4, foundationHeight, size[2] + 0.4], [position[0], base - foundationHeight / 2, position[1]], "concrete", true);
-        this.instanceBox(name, size, [position[0], base + size[1] / 2, position[1]], material, true);
+        const mesh = this.instanceBox(name, size, [position[0], base + size[1] / 2, position[1]], material, true);
+        this.buildingMeshes.push(mesh);
     }
 
     tree(x, z)
@@ -266,6 +320,8 @@ export class PrototypeCityBlock
 
     logRoadMeshDiagnostics()
     {
+        const districtBounds = this.getDistrictBounds();
+        const terrainBounds = this.getWorldBounds(this.terrain.ground);
         const inScene = this.roadMeshes.filter(mesh =>
             this.scene.meshes.includes(mesh)
         );
@@ -274,25 +330,64 @@ export class PrototypeCityBlock
             mesh.computeWorldMatrix(true);
             mesh.refreshBoundingInfo();
             const bounds = mesh.getBoundingInfo().boundingBox;
+            const minimum = bounds.minimumWorld;
+            const maximum = bounds.maximumWorld;
+            const center = minimum.add(maximum).scale(0.5);
+            const dimensions = maximum.subtract(minimum);
+            const terrainOffsets = this.getTerrainOffsets(mesh);
 
             return {
                 name: mesh.name,
-                worldPosition: mesh.getAbsolutePosition().toString(),
+                roadType: mesh.metadata.roadType,
+                expectedBlocks: mesh.metadata.expectedBlocks.join(", "),
+                start: this.formatPoint(mesh.metadata.start),
+                end: this.formatPoint(mesh.metadata.end),
                 material: mesh.material?.name ?? "(none)",
-                boundingMinimum: bounds.minimumWorld.toString(),
-                boundingMaximum: bounds.maximumWorld.toString(),
+                boundingMinimum: minimum.toString(),
+                boundingMaximum: maximum.toString(),
+                calculatedCenter: center.toString(),
+                worldDimensions: dimensions.toString(),
                 visibility: mesh.visibility,
                 isVisible: mesh.isVisible,
                 enabled: mesh.isEnabled(),
                 renderingGroup: mesh.renderingGroupId,
-                addedToScene: this.scene.meshes.includes(mesh)
+                addedToScene: this.scene.meshes.includes(mesh),
+                intersectsDistrict: this.boundsIntersect(minimum, maximum, districtBounds.minimum, districtBounds.maximum),
+                overlapsBuildings: this.buildingMeshes.some(building =>
+                {
+                    const buildingBounds = this.getWorldBounds(building);
+                    return this.boundsIntersect(minimum, maximum, buildingBounds.minimum, buildingBounds.maximum);
+                }),
+                completelyOutsideDistrict: !this.boundsIntersect(minimum, maximum, districtBounds.minimum, districtBounds.maximum),
+                terrainRelationship: Math.min(...terrainOffsets) > 0
+                    ? "above terrain"
+                    : (Math.max(...terrainOffsets) < 0 ? "below terrain" : "inside/intersecting terrain"),
+                minimumTerrainClearance: Math.min(...terrainOffsets).toFixed(3),
+                maximumTerrainClearance: Math.max(...terrainOffsets).toFixed(3)
             };
         });
 
-        console.groupCollapsed("[District roads] Temporary mesh diagnostics");
+        console.group("[District roads] Sprint 13.2 placement diagnostics");
         console.log(`Road meshes created: ${this.roadMeshes.length}`);
         console.log(`Road meshes added to scene: ${inScene.length}`);
         console.table(diagnostics);
+        console.table({
+            districtOrigin: "(0, 0, 0)",
+            districtBounds: `${districtBounds.minimum.toString()} to ${districtBounds.maximum.toString()}`,
+            blockSpacing: `(x: ${this.blockWidth + this.roadWidth}, z: ${this.blockDepth + this.roadWidth})`,
+            roadSpacing: `(x: ${this.blockWidth + this.roadWidth}, z: ${this.blockDepth + this.roadWidth})`,
+            terrainOrigin: this.terrain.ground.getAbsolutePosition().toString(),
+            terrainBounds: `${terrainBounds.minimum.toString()} to ${terrainBounds.maximum.toString()}`,
+            debugRoadMaterial: Config.DistrictDebug.Enabled
+        });
+        console.table(this.blockCenters.map(center => ({
+            block: center.block,
+            center: this.formatPoint(center)
+        })));
+        console.table(this.buildingMeshes.map(mesh => ({
+            building: mesh.name,
+            center: mesh.getBoundingInfo().boundingBox.centerWorld.toString()
+        })));
         console.log(
             "Visibility assessment:",
             diagnostics.every(mesh =>
@@ -302,6 +397,51 @@ export class PrototypeCityBlock
                 : "One or more road meshes are hidden or detached; see the table above."
         );
         console.groupEnd();
+    }
+
+    getDistrictBounds()
+    {
+        const width = this.columns * this.blockWidth + (this.columns + 1) * this.roadWidth;
+        const depth = this.rows * this.blockDepth + (this.rows + 1) * this.roadWidth;
+        return {
+            minimum: new BABYLON.Vector3(-width / 2, Number.NEGATIVE_INFINITY, -depth / 2),
+            maximum: new BABYLON.Vector3(width / 2, Number.POSITIVE_INFINITY, depth / 2),
+            width,
+            depth
+        };
+    }
+
+    getWorldBounds(mesh)
+    {
+        mesh.computeWorldMatrix(true);
+        mesh.refreshBoundingInfo();
+        const bounds = mesh.getBoundingInfo().boundingBox;
+        return { minimum: bounds.minimumWorld, maximum: bounds.maximumWorld };
+    }
+
+    getTerrainOffsets(mesh)
+    {
+        const positions = mesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+        const offsets = [];
+        for (let index = 0; index < positions.length; index += 3)
+        {
+            offsets.push(
+                positions[index + 1] -
+                this.terrain.getHeightAt(positions[index], positions[index + 2])
+            );
+        }
+        return offsets;
+    }
+
+    boundsIntersect(minimumA, maximumA, minimumB, maximumB)
+    {
+        return minimumA.x <= maximumB.x && maximumA.x >= minimumB.x &&
+            minimumA.z <= maximumB.z && maximumA.z >= minimumB.z;
+    }
+
+    formatPoint(point)
+    {
+        return `(${point.x.toFixed(2)}, ${point.z.toFixed(2)})`;
     }
 
     terrainSurface(name, width, depth, centerX, centerZ, elevation, material, collidable = false)

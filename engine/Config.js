@@ -22,6 +22,11 @@ export const Config =
         AdaptToDeviceRatio: true
     },
 
+    DistrictDebug:
+    {
+        Enabled: false
+    },
+
     Camera:
     {
         Distance: 8,
