@@ -1,5 +1,31 @@
 # FaulkerVerse
 
+> Open-world third-person RPG built with Babylon.js.
+
+## Current Gameplay
+
+![Sprint 9 - First Playable Build](screenshots/latest.png)
+
+---
+
+## Current Status
+
+**Latest Build**
+- Sprint: 9.4
+- Branch: `master`
+- Status: 🟢 Playable
+
+### Completed
+
+- ✅ Third-person camera
+- ✅ Procedural terrain
+- ✅ Trees, rocks, and environment spawning
+- ✅ Waterways and lakes
+- ✅ Mixamo character
+- ✅ Developer HUD
+- ✅ Boot diagnostics
+- ✅ Animation state machine
+
 FaulkerVerse is a custom third-person game engine built with Babylon.js.
 
 The project is being developed incrementally using sprint-based milestones, with each sprint producing a stable checkpoint before moving on to the next feature set.
