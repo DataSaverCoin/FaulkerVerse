@@ -15,6 +15,13 @@ export class PrototypeCityBlock
         this.blockWidth = 44;
         this.blockDepth = 46;
         this.roadWidth = 14;
+        this.surfaceElevations = Object.freeze({
+            road: 0.12,
+            sidewalk: 0.20,
+            curb: 0.23,
+            lot: 0.24,
+            marking: 0.255
+        });
         this.columns = 5;
         this.rows = 2;
     }
@@ -30,7 +37,8 @@ export class PrototypeCityBlock
     createMaterials()
     {
         const colors = {
-            asphalt: [0.08, 0.09, 0.1], concrete: [0.48, 0.5, 0.48],
+            asphalt: [0.07, 0.08, 0.09], concrete: [0.72, 0.72, 0.68],
+            curb: [0.42, 0.43, 0.42],
             line: [0.92, 0.82, 0.35], white: [0.9, 0.9, 0.84],
             brick: [0.38, 0.13, 0.09], sandstone: [0.68, 0.61, 0.48],
             glass: [0.12, 0.3, 0.4], metal: [0.1, 0.12, 0.14],
@@ -59,14 +67,14 @@ export class PrototypeCityBlock
         for (let column = 0; column <= this.columns; column += 1)
         {
             const x = (column - this.columns / 2) * pitchX;
-            this.terrainSurface(`NorthSouthRoad${column}`, this.roadWidth, districtDepth, x, 0, 0.04, "asphalt", true);
+            this.terrainSurface(`NorthSouthRoad${column}`, this.roadWidth, districtDepth, x, 0, this.surfaceElevations.road, "asphalt", true);
             this.addLaneDashes(x, -districtDepth / 2 + 5, districtDepth / 2 - 5, false);
         }
 
         for (let row = 0; row <= this.rows; row += 1)
         {
             const z = (row - this.rows / 2) * pitchZ;
-            this.terrainSurface(`EastWestRoad${row}`, districtWidth, this.roadWidth, 0, z, 0.045, "asphalt", true);
+            this.terrainSurface(`EastWestRoad${row}`, districtWidth, this.roadWidth, 0, z, this.surfaceElevations.road, "asphalt", true);
             this.addLaneDashes(z, -districtWidth / 2 + 5, districtWidth / 2 - 5, true);
         }
     }
@@ -81,7 +89,7 @@ export class PrototypeCityBlock
                 horizontal ? 0.22 : 6,
                 horizontal ? amount : fixed,
                 horizontal ? fixed : amount,
-                0.065,
+                this.surfaceElevations.marking,
                 "line"
             );
         }
@@ -97,7 +105,8 @@ export class PrototypeCityBlock
             for (let column = 0; column < this.columns; column += 1)
             {
                 const center = this.getBlockCenter(column, row);
-                this.terrainSurface(`Block${blockIndex}Sidewalk`, this.blockWidth, this.blockDepth, center.x, center.z, 0.11, "concrete", true);
+                this.terrainSurface(`Block${blockIndex}Sidewalk`, this.blockWidth, this.blockDepth, center.x, center.z, this.surfaceElevations.sidewalk, "concrete", true);
+                this.createCurbs(center, blockIndex);
                 this.createLot(layouts[blockIndex], center, blockIndex);
                 blockIndex += 1;
             }
@@ -110,6 +119,21 @@ export class PrototypeCityBlock
             x: (column - (this.columns - 1) / 2) * (this.blockWidth + this.roadWidth),
             z: (row - (this.rows - 1) / 2) * (this.blockDepth + this.roadWidth)
         };
+    }
+
+    createCurbs(center, index)
+    {
+        const curbWidth = 0.6;
+        const horizontalLength = this.blockWidth - curbWidth * 2;
+
+        for (const zOffset of [-this.blockDepth / 2 + curbWidth / 2, this.blockDepth / 2 - curbWidth / 2])
+        {
+            this.terrainSurface(`Block${index}Curb`, horizontalLength, curbWidth, center.x, center.z + zOffset, this.surfaceElevations.curb, "curb", true);
+        }
+        for (const xOffset of [-this.blockWidth / 2 + curbWidth / 2, this.blockWidth / 2 - curbWidth / 2])
+        {
+            this.terrainSurface(`Block${index}Curb`, curbWidth, this.blockDepth, center.x + xOffset, center.z, this.surfaceElevations.curb, "curb", true);
+        }
     }
 
     createLot(type, center, index)
@@ -126,7 +150,7 @@ export class PrototypeCityBlock
         }
         if (type === "empty")
         {
-            this.terrainSurface(`EmptyLot${index}`, 36, 38, center.x, center.z, 0.14, "gravel");
+            this.terrainSurface(`EmptyLot${index}`, 36, 38, center.x, center.z, this.surfaceElevations.lot, "gravel");
             return;
         }
 
@@ -146,9 +170,9 @@ export class PrototypeCityBlock
 
     createPark(center, index)
     {
-        this.terrainSurface(`Park${index}Lawn`, 38, 40, center.x, center.z, 0.14, "grass");
-        this.terrainSurface("ParkPath", 4, 40, center.x, center.z, 0.17, "concrete");
-        this.terrainSurface("ParkPath", 38, 4, center.x, center.z, 0.175, "concrete");
+        this.terrainSurface(`Park${index}Lawn`, 38, 40, center.x, center.z, this.surfaceElevations.lot, "grass");
+        this.terrainSurface("ParkPath", 4, 40, center.x, center.z, this.surfaceElevations.marking, "concrete");
+        this.terrainSurface("ParkPath", 38, 4, center.x, center.z, this.surfaceElevations.marking, "concrete");
 
         for (const [xOffset, zOffset] of [[-14, -15], [14, -14], [-14, 14], [14, 15], [-8, 8], [8, -7]])
         {
@@ -158,12 +182,12 @@ export class PrototypeCityBlock
 
     createParkingLot(center, index)
     {
-        this.terrainSurface(`ParkingLot${index}`, 38, 40, center.x, center.z, 0.14, "asphalt", true);
+        this.terrainSurface(`ParkingLot${index}`, 38, 40, center.x, center.z, this.surfaceElevations.lot, "asphalt", true);
         for (let xOffset = -15; xOffset <= 15; xOffset += 6)
         {
             for (const zOffset of [-10, 10])
             {
-                this.terrainSurface("ParkingLine", 0.16, 9, center.x + xOffset, center.z + zOffset, 0.17, "white");
+                this.terrainSurface("ParkingLine", 0.16, 9, center.x + xOffset, center.z + zOffset, this.surfaceElevations.marking, "white");
             }
         }
     }
