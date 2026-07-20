@@ -81,10 +81,10 @@ export class TerrainManager
 
     sample(x, z)
     {
-        const groundHeight = this.getHeight(x, z);
+        const groundHeight = this.getHeightAt(x, z);
         const step = 1.5;
-        const riseX = this.getHeight(x + step, z) - this.getHeight(x - step, z);
-        const riseZ = this.getHeight(x, z + step) - this.getHeight(x, z - step);
+        const riseX = this.getHeightAt(x + step, z) - this.getHeightAt(x - step, z);
+        const riseZ = this.getHeightAt(x, z + step) - this.getHeightAt(x, z - step);
         const slope = Math.sqrt(riseX * riseX + riseZ * riseZ) / (step * 2);
         const waterDepth = Config.World.Terrain.WaterLevel - groundHeight;
 
@@ -98,7 +98,7 @@ export class TerrainManager
         };
     }
 
-    getHeight(x, z)
+    getHeightAt(x, z)
     {
         const terrainConfig = Config.World.Terrain;
         const frequency = terrainConfig.NoiseFrequency;
@@ -147,6 +147,13 @@ export class TerrainManager
         }
 
         return terrainHeight;
+    }
+
+    // Retained for compatibility with code outside the engine. New systems
+    // should use getHeightAt(), the canonical world-elevation query.
+    getHeight(x, z)
+    {
+        return this.getHeightAt(x, z);
     }
 
     getWaterwayDistance(x, z)

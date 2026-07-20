@@ -4,8 +4,8 @@
 
 export const BuildInfo = Object.freeze(
     {
-        branch: "work",
-        commit: "46bbe88",
-        date: "2026-07-20T05:58:38Z"
+        branch: "codex/sprint-12-1-terrain-integration",
+        commit: "7b8f4b9",
+        date: "2026-07-20T07:10:15Z"
     }
 );
