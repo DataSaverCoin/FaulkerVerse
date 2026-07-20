@@ -242,7 +242,7 @@ export class Player
 
     updateVerticalMovement(deltaSeconds)
     {
-        const groundHeight = this.terrain.getHeight(
+        const groundHeight = this.terrain.getHeightAt(
             this.mesh.position.x,
             this.mesh.position.z
         ) + 1;
@@ -260,7 +260,7 @@ export class Player
         this.verticalVelocity -= this.gravity * deltaSeconds;
         this.mesh.position.y += this.verticalVelocity * deltaSeconds;
 
-        const updatedGroundHeight = this.terrain.getHeight(
+        const updatedGroundHeight = this.terrain.getHeightAt(
             this.mesh.position.x,
             this.mesh.position.z
         ) + 1;

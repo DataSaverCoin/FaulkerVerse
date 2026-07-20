@@ -22,6 +22,7 @@ import { TerrainManager } from "../terrain/TerrainManager.js";
 import { Environment } from "./Environment.js";
 import { Lighting } from "./Lighting.js";
 import { StartupMetrics } from "../engine/Version.js";
+import { PrototypeCityBlock } from "./PrototypeCityBlock.js";
 
 export class World
 {
@@ -121,6 +122,12 @@ export class World
             );
 
         this.environment.initialize();
+        this.cityBlock = new PrototypeCityBlock(
+            this.scene,
+            this.terrain,
+            this.lighting
+        );
+        this.cityBlock.initialize();
 
         finishEnvironmentStartup();
     }

@@ -25,12 +25,17 @@ export class GolfCart
         this.mesh = null;
         this.driver = null;
         this.speed = 0;
+        this.throttle = 0;
+        this.steering = 0;
         this.maxForwardSpeed = 20;
         this.maxReverseSpeed = 8;
-        this.acceleration = 15;
-        this.braking = 28;
-        this.drag = 7;
+        this.acceleration = 12;
+        this.braking = 22;
+        this.drag = 3.2;
         this.steeringSpeed = 1.9;
+        this.throttleResponse = 3.5;
+        this.steeringResponse = 5.5;
+        this.wheels = [];
 
         this.createModel(position);
     }
@@ -39,6 +44,8 @@ export class GolfCart
     {
         this.mesh = new BABYLON.TransformNode("GolfCart", this.scene);
         this.mesh.position.copyFrom(position);
+        this.visualRoot = new BABYLON.TransformNode("GolfCartVisuals", this.scene);
+        this.visualRoot.parent = this.mesh;
 
         const bodyMaterial = this.createMaterial("CartBody", [0.05, 0.44, 0.72]);
         const darkMaterial = this.createMaterial("CartDark", [0.035, 0.045, 0.05]);
@@ -58,10 +65,12 @@ export class GolfCart
                     { height: 0.34, diameter: 0.72, tessellation: 16 },
                     this.scene
                 );
-                wheel.parent = this.mesh;
+                wheel.parent = this.visualRoot;
                 wheel.position.set(x, 0.48, z);
                 wheel.rotation.z = Math.PI / 2;
                 wheel.material = darkMaterial;
+                wheel.metadata = { front: z > 0 };
+                this.wheels.push(wheel);
             }
         }
 
@@ -86,7 +95,7 @@ export class GolfCart
             { width: size[0], height: size[1], depth: size[2] },
             this.scene
         );
-        box.parent = this.mesh;
+        box.parent = this.visualRoot;
         box.position.set(position[0], position[1], position[2]);
         box.material = material;
         return box;
@@ -108,32 +117,40 @@ export class GolfCart
             return;
         }
 
-        const throttle =
+        const throttleInput =
             (this.input.isDown("KeyW") ? 1 : 0) -
             (this.input.isDown("KeyS") ? 1 : 0);
-        const steering =
+        const steeringInput =
             (this.input.isDown("KeyD") ? 1 : 0) -
             (this.input.isDown("KeyA") ? 1 : 0);
         const isBraking = this.input.isDown("Space");
+
+        this.throttle = this.damp(this.throttle, throttleInput, this.throttleResponse, deltaSeconds);
+        this.steering = this.damp(this.steering, steeringInput, this.steeringResponse, deltaSeconds);
 
         if (isBraking)
         {
             this.speed = this.moveToward(this.speed, 0, this.braking * deltaSeconds);
         }
-        else if (throttle !== 0)
+        else if (Math.abs(this.throttle) > 0.01)
         {
-            const target = throttle > 0 ? this.maxForwardSpeed : -this.maxReverseSpeed;
-            this.speed = this.moveToward(this.speed, target, this.acceleration * deltaSeconds);
+            const target = this.throttle > 0 ?
+                this.maxForwardSpeed * this.throttle :
+                this.maxReverseSpeed * this.throttle;
+            const changingDirection = Math.sign(target) !== Math.sign(this.speed) && Math.abs(this.speed) > 0.2;
+            const force = changingDirection ? this.braking : this.acceleration;
+            this.speed = this.moveToward(this.speed, target, force * deltaSeconds);
         }
         else
         {
             this.applyDrag(deltaSeconds);
         }
 
-        const speedRatio = Math.min(1, Math.abs(this.speed) / 5);
+        const speedRatio = Math.min(1, Math.abs(this.speed) / this.maxForwardSpeed);
+        const steeringGrip = 1 - speedRatio * 0.48;
         const reverseDirection = this.speed < 0 ? -1 : 1;
-        this.mesh.rotation.y += steering * reverseDirection *
-            this.steeringSpeed * speedRatio * deltaSeconds;
+        this.mesh.rotation.y += this.steering * reverseDirection *
+            this.steeringSpeed * steeringGrip * Math.min(1, Math.abs(this.speed) / 4) * deltaSeconds;
 
         const forward = new BABYLON.Vector3(
             Math.sin(this.mesh.rotation.y),
@@ -141,6 +158,7 @@ export class GolfCart
             Math.cos(this.mesh.rotation.y)
         );
         this.mesh.position.addInPlace(forward.scale(this.speed * deltaSeconds));
+        this.updatePresentation(deltaSeconds, speedRatio);
         this.snapToTerrain();
     }
 
@@ -158,9 +176,35 @@ export class GolfCart
         return Math.max(value - amount, target);
     }
 
+    damp(value, target, response, deltaSeconds)
+    {
+        return BABYLON.Scalar.Lerp(value, target, 1 - Math.exp(-response * deltaSeconds));
+    }
+
+    updatePresentation(deltaSeconds, speedRatio)
+    {
+        const wheelTravel = this.speed * deltaSeconds / 0.36;
+        const steeringAngle = this.steering * 0.38;
+
+        for (const wheel of this.wheels)
+        {
+            wheel.rotation.x += wheelTravel;
+            wheel.rotation.y = wheel.metadata.front ? steeringAngle : 0;
+        }
+
+        const desiredRoll = -this.steering * speedRatio * 0.075;
+        this.visualRoot.rotation.z = this.damp(
+            this.visualRoot.rotation.z,
+            desiredRoll,
+            4.5,
+            deltaSeconds
+        );
+        this.visualRoot.position.y = Math.sin(performance.now() * 0.006) * speedRatio * 0.018;
+    }
+
     snapToTerrain()
     {
-        this.mesh.position.y = this.terrain.getHeight(
+        this.mesh.position.y = this.terrain.getHeightAt(
             this.mesh.position.x,
             this.mesh.position.z
         );
@@ -189,7 +233,7 @@ export class GolfCart
             -Math.sin(this.mesh.rotation.y)
         );
         const exitPosition = this.mesh.position.add(right.scale(2));
-        exitPosition.y = this.terrain.getHeight(exitPosition.x, exitPosition.z) + 1;
+        exitPosition.y = this.terrain.getHeightAt(exitPosition.x, exitPosition.z) + 1;
         const driver = this.driver;
         this.driver = null;
         driver.exitVehicle(exitPosition);

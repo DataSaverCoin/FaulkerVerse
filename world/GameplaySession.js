@@ -18,6 +18,11 @@ export class GameplaySession
     update(deltaSeconds)
     {
         this.cart.update(deltaSeconds);
+        this.audio.updateVehicle(
+            this.cart.speed,
+            this.cart.throttle,
+            this.input.isDown("Space")
+        );
         this.rideSystem.update(deltaSeconds);
         this.updateInteraction();
     }

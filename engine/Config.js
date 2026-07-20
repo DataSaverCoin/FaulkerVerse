@@ -30,6 +30,7 @@ export const Config =
         Pitch: Math.PI / 4,
         TargetHeight: 1.75,
         FollowSpeed: 10.0,
+        DistanceFollowSpeed: 2.5,
         ZoomSpeed: 0.02
     },
 

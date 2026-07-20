@@ -41,10 +41,11 @@ export class RideSystem
         this.destination = null;
         this.nextRideDelay = 0;
         this.listeners = new Set();
+        this.markerTime = 0;
         this.routes = [
-            [{ x: 22, z: 15 }, { x: -28, z: 38 }],
-            [{ x: -18, z: -22 }, { x: 34, z: -12 }],
-            [{ x: 38, z: 26 }, { x: -36, z: -30 }]
+            [{ x: 5, z: 38 }, { x: -5, z: -34 }],
+            [{ x: -5, z: -24 }, { x: 22, z: 18 }],
+            [{ x: 5, z: -46 }, { x: -5, z: 45 }]
         ];
     }
 
@@ -96,7 +97,10 @@ export class RideSystem
 
         if (this.marker)
         {
-            this.marker.rotation.y += deltaSeconds * 1.6;
+            this.markerTime += deltaSeconds;
+            this.marker.rotation.y += deltaSeconds * 0.7;
+            const pulse = 1 + Math.sin(this.markerTime * 3) * 0.1;
+            this.marker.scaling.set(pulse, pulse, pulse);
         }
     }
 
@@ -108,7 +112,7 @@ export class RideSystem
         this.destination = this.toTerrainPosition(route[1]);
         this.fare = 14 + (this.rideId % 4) * 4;
         this.createPassenger(this.pickup);
-        this.showMarker(this.pickup, [1.0, 0.72, 0.1]);
+        this.showMarker(this.pickup, [1.0, 0.64, 0.05], "PICKUP");
         this.transitionTo(RideState.ASSIGNED);
     }
 
@@ -116,7 +120,7 @@ export class RideSystem
     {
         this.transitionTo(RideState.PASSENGER_ONBOARD);
         this.passenger.setEnabled(false);
-        this.showMarker(this.destination, [0.25, 0.9, 0.48]);
+        this.showMarker(this.destination, [0.18, 0.78, 1.0], "DROP OFF");
         this.audio.play("pickup");
     }
 
@@ -202,7 +206,7 @@ export class RideSystem
     {
         return new BABYLON.Vector3(
             point.x,
-            this.terrain.getHeight(point.x, point.z),
+            this.terrain.getHeightAt(point.x, point.z),
             point.z
         );
     }
@@ -225,7 +229,7 @@ export class RideSystem
         this.passenger.material = material;
     }
 
-    showMarker(position, color)
+    showMarker(position, color, label = "")
     {
         if (this.marker)
         {
@@ -243,9 +247,21 @@ export class RideSystem
         );
         this.marker.position.copyFrom(position);
         this.marker.position.y += 0.25;
+        this.marker.isPickable = false;
+        this.marker.renderingGroupId = 1;
+        this.markerTime = 0;
         const material = new BABYLON.StandardMaterial("RideMarkerMaterial", this.scene);
         material.emissiveColor = new BABYLON.Color3(...color);
         material.alpha = 0.86;
         this.marker.material = material;
+        const beacon = BABYLON.MeshBuilder.CreateCylinder(
+            `${label}Beacon`,
+            { height: 7, diameterTop: 0.35, diameterBottom: 2.2, tessellation: 24 },
+            this.scene
+        );
+        beacon.parent = this.marker;
+        beacon.position.y = 3.5;
+        beacon.material = material;
+        beacon.isPickable = false;
     }
 }
