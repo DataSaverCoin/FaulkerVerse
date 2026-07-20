@@ -23,6 +23,7 @@ import { Environment } from "./Environment.js";
 import { Lighting } from "./Lighting.js";
 import { StartupMetrics } from "../engine/Version.js";
 import { PrototypeCityBlock } from "./PrototypeCityBlock.js";
+import { StandaloneRoad } from "./StandaloneRoad.js";
 
 export class World
 {
@@ -128,6 +129,12 @@ export class World
             this.lighting
         );
         this.cityBlock.initialize();
+
+        this.standaloneRoad = new StandaloneRoad(
+            this.scene,
+            this.terrain
+        );
+        this.standaloneRoad.initialize();
 
         finishEnvironmentStartup();
     }
