@@ -12,6 +12,7 @@ export class PrototypeCityBlock
         this.root = new BABYLON.TransformNode("PrototypeDistrict", scene);
         this.materials = new Map();
         this.sources = new Map();
+        this.roadMeshes = [];
         this.blockWidth = 44;
         this.blockDepth = 46;
         this.roadWidth = 14;
@@ -32,6 +33,7 @@ export class PrototypeCityBlock
         this.createRoadGrid();
         this.createBlocks();
         this.hideSources();
+        this.logRoadMeshDiagnostics();
     }
 
     createMaterials()
@@ -67,14 +69,18 @@ export class PrototypeCityBlock
         for (let column = 0; column <= this.columns; column += 1)
         {
             const x = (column - this.columns / 2) * pitchX;
-            this.terrainSurface(`NorthSouthRoad${column}`, this.roadWidth, districtDepth, x, 0, this.surfaceElevations.road, "asphalt", true);
+            this.roadMeshes.push(
+                this.terrainSurface(`NorthSouthRoad${column}`, this.roadWidth, districtDepth, x, 0, this.surfaceElevations.road, "asphalt", true)
+            );
             this.addLaneDashes(x, -districtDepth / 2 + 5, districtDepth / 2 - 5, false);
         }
 
         for (let row = 0; row <= this.rows; row += 1)
         {
             const z = (row - this.rows / 2) * pitchZ;
-            this.terrainSurface(`EastWestRoad${row}`, districtWidth, this.roadWidth, 0, z, this.surfaceElevations.road, "asphalt", true);
+            this.roadMeshes.push(
+                this.terrainSurface(`EastWestRoad${row}`, districtWidth, this.roadWidth, 0, z, this.surfaceElevations.road, "asphalt", true)
+            );
             this.addLaneDashes(z, -districtWidth / 2 + 5, districtWidth / 2 - 5, true);
         }
     }
@@ -256,6 +262,46 @@ export class PrototypeCityBlock
         {
             source.isVisible = false;
         }
+    }
+
+    logRoadMeshDiagnostics()
+    {
+        const inScene = this.roadMeshes.filter(mesh =>
+            this.scene.meshes.includes(mesh)
+        );
+        const diagnostics = this.roadMeshes.map(mesh =>
+        {
+            mesh.computeWorldMatrix(true);
+            mesh.refreshBoundingInfo();
+            const bounds = mesh.getBoundingInfo().boundingBox;
+
+            return {
+                name: mesh.name,
+                worldPosition: mesh.getAbsolutePosition().toString(),
+                material: mesh.material?.name ?? "(none)",
+                boundingMinimum: bounds.minimumWorld.toString(),
+                boundingMaximum: bounds.maximumWorld.toString(),
+                visibility: mesh.visibility,
+                isVisible: mesh.isVisible,
+                enabled: mesh.isEnabled(),
+                renderingGroup: mesh.renderingGroupId,
+                addedToScene: this.scene.meshes.includes(mesh)
+            };
+        });
+
+        console.groupCollapsed("[District roads] Temporary mesh diagnostics");
+        console.log(`Road meshes created: ${this.roadMeshes.length}`);
+        console.log(`Road meshes added to scene: ${inScene.length}`);
+        console.table(diagnostics);
+        console.log(
+            "Visibility assessment:",
+            diagnostics.every(mesh =>
+                mesh.addedToScene && mesh.isVisible && mesh.enabled && mesh.visibility > 0
+            )
+                ? "All road meshes are scene-attached, visible, and enabled. If they are not visible on screen, inspect terrain/water occlusion and camera framing."
+                : "One or more road meshes are hidden or detached; see the table above."
+        );
+        console.groupEnd();
     }
 
     terrainSurface(name, width, depth, centerX, centerZ, elevation, material, collidable = false)
