@@ -7,6 +7,35 @@ export class GameplayAudio
     constructor()
     {
         this.context = null;
+        this.engineOscillator = null;
+        this.engineGain = null;
+    }
+
+    updateVehicle(speed, throttle, braking)
+    {
+        if (!this.context || !this.engineOscillator)
+        {
+            return;
+        }
+        const now = this.context.currentTime;
+        const speedRatio = Math.min(1, Math.abs(speed) / 20);
+        this.engineOscillator.frequency.setTargetAtTime(52 + speedRatio * 95 + Math.abs(throttle) * 18, now, 0.08);
+        this.engineGain.gain.setTargetAtTime(braking ? 0.018 : 0.025 + speedRatio * 0.025, now, 0.1);
+    }
+
+    startVehicleEngine()
+    {
+        if (!this.context || this.engineOscillator)
+        {
+            return;
+        }
+        this.engineOscillator = this.context.createOscillator();
+        this.engineGain = this.context.createGain();
+        this.engineOscillator.type = "sawtooth";
+        this.engineOscillator.frequency.value = 52;
+        this.engineGain.gain.value = 0.025;
+        this.engineOscillator.connect(this.engineGain).connect(this.context.destination);
+        this.engineOscillator.start();
     }
 
     play(cue)
@@ -19,6 +48,7 @@ export class GameplayAudio
         }
 
         this.context = this.context || new AudioContext();
+        this.startVehicleEngine();
 
         if (this.context.state === "suspended")
         {

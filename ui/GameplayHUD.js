@@ -1,4 +1,4 @@
-/* Minimal player-facing Sprint 11 ride HUD. */
+/* Minimal player-facing ride HUD. */
 
 "use strict";
 
@@ -38,6 +38,7 @@ export class GameplayHUD
                 <span id="rideDistance"></span>
             </div>
             <div id="rideEarnings" class="rideEarnings" aria-live="polite"></div>
+            <div id="rideComplete" class="rideComplete" aria-live="polite">RIDE COMPLETE</div>
         `;
         document.body.appendChild(this.root);
 
@@ -51,6 +52,8 @@ export class GameplayHUD
         this.status = document.getElementById("rideStatus");
         this.distance = document.getElementById("rideDistance");
         this.earnings = document.getElementById("rideEarnings");
+        this.completion = document.getElementById("rideComplete");
+        this.lastState = null;
 
         this.wallet.subscribe((balance, amount) =>
         {
@@ -74,5 +77,10 @@ export class GameplayHUD
                 ? "NICE DRIVING!"
                 : `${ride.distance}m AWAY`;
         this.prompt.textContent = this.session.interactionPrompt;
+        if (ride.state !== this.lastState)
+        {
+            this.completion.classList.toggle("show", ride.state === "COMPLETED");
+            this.lastState = ride.state;
+        }
     }
 }

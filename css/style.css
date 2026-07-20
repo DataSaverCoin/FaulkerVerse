@@ -54,9 +54,10 @@ body
     color: #fff;
     background: linear-gradient(145deg, rgba(8, 18, 29, 0.94), rgba(9, 36, 49, 0.84));
     border: 1px solid rgba(94, 220, 255, 0.35);
-    border-radius: 12px;
+    border-radius: 14px;
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+    backdrop-filter: blur(8px);
     z-index: 1000;
     pointer-events: none;
 }
@@ -140,6 +141,27 @@ body
 .rideEarnings.show
 {
     animation: earnedFare 1.8s ease-out;
+}
+
+.rideComplete
+{
+    max-height: 0;
+    margin-top: 0;
+    overflow: hidden;
+    color: #76f3a5;
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: 0.16em;
+    text-align: center;
+    opacity: 0;
+    transition: max-height 240ms ease, margin 240ms ease, opacity 240ms ease;
+}
+
+.rideComplete.show
+{
+    max-height: 30px;
+    margin-top: 14px;
+    opacity: 1;
 }
 
 @keyframes earnedFare
