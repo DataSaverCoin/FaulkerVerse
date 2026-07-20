@@ -42,3 +42,116 @@ body
 
     outline: none;
 }
+
+#gameplayHUD
+{
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    width: min(340px, calc(100vw - 48px));
+    padding: 18px 20px;
+    box-sizing: border-box;
+    color: #fff;
+    background: linear-gradient(145deg, rgba(8, 18, 29, 0.94), rgba(9, 36, 49, 0.84));
+    border: 1px solid rgba(94, 220, 255, 0.35);
+    border-radius: 12px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+    font-family: Arial, Helvetica, sans-serif;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+.gameplayBrand,
+.gameplayLabel
+{
+    color: #67dcff;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+}
+
+.gameplayWallet
+{
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin: 8px 0 18px;
+    color: #bcd3da;
+    font-size: 13px;
+}
+
+.gameplayWallet strong
+{
+    color: #76f3a5;
+    font-size: 28px;
+}
+
+.gameplayObjective
+{
+    min-height: 48px;
+    margin-top: 7px;
+    font-size: 19px;
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+.gameplayDetails
+{
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.13);
+    color: #b9cbd2;
+    font-size: 10px;
+    font-weight: bold;
+    letter-spacing: 0.05em;
+}
+
+#interactionPrompt
+{
+    position: fixed;
+    bottom: 38px;
+    left: 50%;
+    transform: translateX(-50%);
+    min-width: 190px;
+    padding: 12px 18px;
+    color: #fff;
+    background: rgba(5, 12, 18, 0.88);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    border-radius: 8px;
+    font: 700 14px Arial, sans-serif;
+    text-align: center;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+.rideEarnings
+{
+    position: absolute;
+    right: 18px;
+    top: 50px;
+    color: #76f3a5;
+    font-size: 22px;
+    font-weight: bold;
+    opacity: 0;
+}
+
+.rideEarnings.show
+{
+    animation: earnedFare 1.8s ease-out;
+}
+
+@keyframes earnedFare
+{
+    0% { opacity: 0; transform: translateY(10px); }
+    20% { opacity: 1; transform: translateY(0); }
+    75% { opacity: 1; }
+    100% { opacity: 0; transform: translateY(-18px); }
+}
+
+@media (max-width: 700px)
+{
+    #gameplayHUD { top: 12px; right: 12px; width: 290px; }
+    #developerHUD { display: none; }
+}

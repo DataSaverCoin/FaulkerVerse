@@ -34,6 +34,10 @@ export class DeveloperHUD
         this.playerX = null;
         this.playerY = null;
         this.playerZ = null;
+        this.rideState = null;
+        this.wallet = null;
+        this.vehicleSpeed = null;
+        this.rideId = null;
     }
 
     initialize()
@@ -115,6 +119,28 @@ FaulkerVerse Developer HUD
 <span>Player Z</span>
 <span id="hudPlayerZ">0</span>
 </div>
+
+<hr>
+
+<div class="hudRow">
+<span>Ride State</span>
+<span id="hudRideState">IDLE</span>
+</div>
+
+<div class="hudRow">
+<span>Ride ID</span>
+<span id="hudRideId">0</span>
+</div>
+
+<div class="hudRow">
+<span>Wallet</span>
+<span id="hudWallet">$0</span>
+</div>
+
+<div class="hudRow">
+<span>Vehicle</span>
+<span id="hudVehicleSpeed">0 mph</span>
+</div>
 `;
 
         this.fps =
@@ -156,6 +182,11 @@ FaulkerVerse Developer HUD
             document.getElementById(
                 "hudPlayerZ"
             );
+
+        this.rideState = document.getElementById("hudRideState");
+        this.rideId = document.getElementById("hudRideId");
+        this.wallet = document.getElementById("hudWallet");
+        this.vehicleSpeed = document.getElementById("hudVehicleSpeed");
     }
 
     update(deltaSeconds)
@@ -226,6 +257,14 @@ FaulkerVerse Developer HUD
 
             this.playerZ.textContent =
                 p.z.toFixed(2);
+        }
+
+        if (this.engine.rideSystem)
+        {
+            this.rideState.textContent = this.engine.rideSystem.state;
+            this.rideId.textContent = this.engine.rideSystem.rideId;
+            this.wallet.textContent = `$${this.engine.wallet.balance}`;
+            this.vehicleSpeed.textContent = `${this.engine.golfCart.speedMph} mph`;
         }
     }
 }
