@@ -103,10 +103,13 @@ export class StandaloneRoad
 
         BABYLON.VertexData.ComputeNormals(positions, indices, normals);
         const vertexData = new BABYLON.VertexData();
-        Object.assign(vertexData, { positions, indices, normals, uvs });
+        vertexData.positions = positions;
+        vertexData.indices = indices;
+        vertexData.normals = normals;
+        vertexData.uvs = uvs;
 
         const mesh = new BABYLON.Mesh(name, this.scene);
-        vertexData.applyToMesh(mesh);
+        vertexData.applyToMesh(mesh, true);
         mesh.parent = this.root;
         mesh.material = material;
         mesh.receiveShadows = false;
