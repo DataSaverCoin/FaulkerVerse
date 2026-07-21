@@ -17,22 +17,13 @@ Purpose:
 
 import { BuildInfo } from "./build-info.generated.js";
 
-const buildOverrides =
-    globalThis.FAULKERVERSE_BUILD || {};
-
 export const Version = Object.freeze(
     {
-        Number: "0.13.2",
-        Sprint: "Sprint 13.2",
-        Branch:
-            buildOverrides.branch ||
-            BuildInfo.branch,
-        Commit:
-            buildOverrides.commit ||
-            BuildInfo.commit,
-        BuildDate:
-            buildOverrides.date ||
-            BuildInfo.date,
+        Number: BuildInfo.version,
+        Sprint: BuildInfo.sprint,
+        Branch: BuildInfo.branch,
+        Commit: BuildInfo.commit,
+        BuildDate: BuildInfo.date,
 
         get Label()
         {
