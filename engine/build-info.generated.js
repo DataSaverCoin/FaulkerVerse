@@ -2,10 +2,10 @@
 
 "use strict";
 
-export const BuildInfo = Object.freeze(
-    {
-        branch: "codex/sprint-13-2-road-root-cause",
-        commit: "595b7f7",
-        date: "2026-07-20T08:54:00Z"
-    }
-);
+export const BuildInfo = Object.freeze({
+    version: "0.13.2",
+    sprint: "Sprint 13.2",
+    branch: "work",
+    commit: "5f2abef",
+    date: "2026-07-21T03:29:08Z"
+});
