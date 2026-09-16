@@ -146,17 +146,17 @@ FaulkerVerse Developer HUD
 
 <div class="hudRow">
 <span>F1</span>
-<span>Teleport Block A</span>
+<span>${this.engine.gameplaySession.teleportLocations[0].name}</span>
 </div>
 
 <div class="hudRow">
 <span>F2</span>
-<span>Teleport Block B</span>
+<span>${this.engine.gameplaySession.teleportLocations[1].name}</span>
 </div>
 
 <div class="hudRow">
 <span>F3</span>
-<span>Teleport Block C</span>
+<span>${this.engine.gameplaySession.teleportLocations[2].name}</span>
 </div>
 `;
 

@@ -1,0 +1,3 @@
+# Keep downloaded vendor bytes identical to their pinned checksums.
+android/vendor/* -text
+android/vendor/LICENSE.txt whitespace=cr-at-eol

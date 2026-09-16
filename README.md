@@ -183,3 +183,13 @@ Each sprint follows the same process:
 4. Return complete replacement files only.
 5. Verify functionality.
 6. Commit and tag the sprint.
+
+## Free roam and street rides
+
+Start off duty. **Go on duty** enables automatic dispatch; **Go off duty** stops future dispatch and cancels an uncollected pickup. Finish an onboard fare to get paid, or use **Cancel fare** to end it without payment. Street ride offers work while off duty too.
+
+On foot, approach a stopped sedan, pickup or delivery truck and press **E / Enter-exit** to eject its adult driver and take control. The car uses WASD/steering, brakes, collisions, damage and the existing follow camera. Stop before exiting. Taken vehicles remain parked; return to them or the golf cart, or use **G / Spawn cart** for a replacement. Vehicle changes require finishing or canceling an active fare. Bicycles and motorcycles remain traffic-only.
+
+There are **100 sidewalk residents**: 70 adults, 10 children, 10 toddlers and 10 babies in strollers. Approach and press **F / Talk** to greet them. Stop your vehicle beside someone and choose **Do you need a ride?** They may decline; accepted rides use the existing destination marker and pay on arrival. Guardians handle family offers; four-person families need the six-seat cart. Ride offers have a one-minute cooldown after a response.
+
+Vehicle takeovers, resident locations and earnings are session-only. Driver ejection is a short procedural animation; police/wanted levels, persistent car ownership and free-form spoken dialogue are not implemented.

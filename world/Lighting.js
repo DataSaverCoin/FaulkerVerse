@@ -125,9 +125,11 @@ export class Lighting
         BABYLON.Effect.ShadersStore.outdoorSkyFragmentShader = `
             precision highp float;
             varying float height;
+            uniform vec3 horizonColor;
+            uniform vec3 zenithColor;
             void main(void) {
-                vec3 horizon = vec3(0.93, 0.72, 0.48);
-                vec3 zenith = vec3(0.26, 0.57, 0.82);
+                vec3 horizon = horizonColor;
+                vec3 zenith = zenithColor;
                 float blend = smoothstep(-0.12, 0.72, height);
                 gl_FragColor = vec4(mix(horizon, zenith, blend), 1.0);
             }`;
@@ -137,10 +139,12 @@ export class Lighting
             { vertex: "outdoorSky", fragment: "outdoorSky" },
             {
                 attributes: ["position"],
-                uniforms: ["worldViewProjection"]
+                uniforms: ["worldViewProjection", "horizonColor", "zenithColor"]
             }
         );
         skyMaterial.backFaceCulling = false;
+        skyMaterial.setColor3("horizonColor",new BABYLON.Color3(.93,.72,.48));
+        skyMaterial.setColor3("zenithColor",new BABYLON.Color3(.26,.57,.82));
 
         this.sky.material =
             skyMaterial;

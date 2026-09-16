@@ -33,6 +33,12 @@ export class Wallet
         return this.balance;
     }
 
+    spend(amount)
+    {
+        if(!Number.isFinite(amount)||amount<=0||!Number.isInteger(amount)||this.balance<amount)return false;
+        this.balance-=amount;this.notify(-amount);return true;
+    }
+
     subscribe(listener)
     {
         this.listeners.add(listener);

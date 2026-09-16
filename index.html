@@ -23,16 +23,25 @@
     >
 
     <!-- BabylonJS Core -->
-    <script src="https://cdn.babylonjs.com/babylon.js"></script>
-    <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+    <script defer src="https://cdn.babylonjs.com/babylon.js"></script>
+    <script defer src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
     <!-- BabylonJS Materials -->
-    <script src="https://cdn.babylonjs.com/materialsLibrary/babylon.gridMaterial.min.js"></script>
+    <script defer src="https://cdn.babylonjs.com/materialsLibrary/babylon.gridMaterial.min.js"></script>
 
 </head>
 
 <body>
 
     <canvas id="gameCanvas"></canvas>
+    <div id="gameLoading">
+        <div class="loadingCard">
+            <h1>FAULKERVERSE</h1>
+            <p id="loadingStage" role="status" aria-live="polite">Downloading game engine…</p>
+            <progress id="loadingProgress" max="100" value="0" aria-label="Game loading progress"></progress>
+            <p id="loadingPercent">0%</p>
+            <small>Progress follows loading stages. Preparing the city may take a minute.</small>
+        </div>
+    </div>
 
     <script
         type="module"

@@ -17,6 +17,7 @@ Purpose:
 
 "use strict";
 
+import { DowntownMap } from "./DowntownMap.js";
 import { Config } from "../engine/Config.js";
 import { TerrainManager } from "../terrain/TerrainManager.js";
 import { Environment } from "./Environment.js";
@@ -47,7 +48,7 @@ export class World
         this.createScene();
         this.createLighting();
         this.createTerrain();
-        this.createEnvironment();
+        await this.createEnvironment();
         this.createCamera();
 
         this.scene.onBeforeRenderObservable.add(
@@ -87,6 +88,7 @@ export class World
             );
 
         this.lighting.initialize();
+        if (Config.World.Downtown) this.lighting.sky.scaling.setAll(16);
     }
 
     createTerrain()
@@ -108,8 +110,16 @@ export class World
         finishTerrainStartup();
     }
 
-    createEnvironment()
+    async createEnvironment()
     {
+        if (Config.World.Downtown)
+        {
+            this.environment = new DowntownMap(this.scene, this.terrain);
+            await this.environment.initialize();
+            this.ground = this.terrain.ground;
+            this.cityBlock = this.environment;
+            return;
+        }
         const finishEnvironmentStartup =
             StartupMetrics.begin(
                 "Environment"
@@ -159,6 +169,8 @@ export class World
         //
         // Camera limits.
         //
+
+        this.camera.maxZ = Config.World.Downtown ? 12000 : 3000;
 
         this.camera.lowerRadiusLimit =
             Config.Camera.MinDistance;
