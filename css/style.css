@@ -177,3 +177,137 @@ body
     #gameplayHUD { top: 12px; right: 12px; width: 290px; }
     #developerHUD { display: none; }
 }
+
+#downtownMap {position:fixed;bottom:18px;left:18px;width:280px;z-index:10;background:#102329ed;color:#edf3ec;border:1px solid #48646b;border-radius:12px;overflow:hidden;font:12px system-ui;box-shadow:0 8px 30px #0005}
+#downtownMap header {padding:12px;font-weight:800;letter-spacing:1.5px} #downtownMap header span {color:#75d6de;font-size:10px} #downtownMap button {float:right;background:none;border:0;color:white;font-size:18px;cursor:pointer}
+#downtownMap canvas {display:block;width:100%;height:auto} #downtownMap .mapStreet {padding:8px 12px 0;font-weight:700} #downtownMap .mapLegend,#downtownMap small {display:block;padding:6px 12px;color:#bed0d0} #downtownMap b {color:#ffc247} #downtownMap i {color:#42d8ff;font-style:normal} #downtownMap a {display:block;color:#99b5b7;font-size:10px;padding:0 12px 10px} #downtownMap.collapsed > :not(header) {display:none}
+#developerHUD {transform:scale(.72);transform-origin:top left}
+@media(max-width:700px) {#downtownMap{width:210px;bottom:70px;left:8px} #developerHUD{display:none} #gameplayHUD{max-width:calc(100vw - 48px)}}
+@media(max-height:850px) and (min-width:701px) {#developerHUD {transform:scale(.53)} #downtownMap {width:245px}}
+
+#downtownMap .mapZoom, #downtownMap .trainView { float: none; display: inline-block; font-size: 11px; margin: 5px 6px; padding: 4px 5px; color: #f2e6cb; background: #304740; border: 1px solid #759087; border-radius: 4px; cursor: pointer; }
+#downtownMap .mapGeology { padding: 2px 10px; color: #d0b77e; font-size: 11px; }
+#downtownMap.collapsed .mapZoom, #downtownMap.collapsed .mapGeology { display: none; }
+
+#gameLoading {position:fixed;inset:0;display:grid;place-items:center;padding:30px;background:#102735;color:#e3f4eb;font:20px system-ui;z-index:5000;text-align:center}
+#touchControls {position:fixed;inset:0;z-index:1100;pointer-events:none;user-select:none;-webkit-user-select:none;font:12px system-ui;color:white}
+#touchControls button,#touchStick,#touchLook {touch-action:none;pointer-events:auto;-webkit-tap-highlight-color:transparent}
+#touchStick {position:absolute;bottom:max(18px,env(safe-area-inset-bottom));left:max(18px,env(safe-area-inset-left));width:124px;height:124px;border-radius:50%;background:#153641aa;border:2px solid #92c8d099;display:grid;place-items:center}
+#touchKnob {width:48px;height:48px;border-radius:50%;background:#77c6d2bb;border:2px solid #d2eeef}
+#touchStick small {position:absolute;bottom:10px;font-size:9px;pointer-events:none}
+#touchLook {position:absolute;top:110px;bottom:155px;right:14px;width:42%;background:transparent}
+#touchLook small {position:absolute;right:10px;bottom:10px;color:#ffffff88;font-size:9px;pointer-events:none}
+.touchActions {position:absolute;right:max(14px,env(safe-area-inset-right));bottom:max(18px,env(safe-area-inset-bottom));display:grid;grid-template-columns:90px 90px;gap:8px}
+.touchActions button {min-height:48px;border:1px solid #b3d4d8;border-radius:15px;color:white;background:#173d4edd;font:bold 12px system-ui}
+.touchActions button.held {background:#458b9a}
+.touchMode #gameplayHUD {top:8px;left:8px;right:auto;width:min(330px,calc(100vw - 210px));padding:8px 10px;border-radius:8px;backdrop-filter:none}
+.touchMode .gameplayBrand,.touchMode .gameplayLabel,.touchMode #rideStatus {display:none}
+.touchMode .gameplayWallet {margin:0 0 3px;font-size:10px}.touchMode .gameplayWallet strong {font-size:19px}
+.touchMode .gameplayObjective {font-size:12px;min-height:0;margin:2px 0}.touchMode .gameplayDetails {padding-top:4px;font-size:9px}
+.touchMode #interactionPrompt {bottom:5px;max-width:calc(100vw - 350px);font-size:11px;padding:4px 8px}
+.touchMode #downtownMap {left:155px;bottom:15px;max-height:calc(100vh - 125px);width:220px;overflow:auto;z-index:1150}
+.touchMode #downtownMap.collapsed {display:none}
+.touchMode #worldControls {top:8px;bottom:auto!important;right:8px!important;max-width:180px!important;max-height:calc(100vh - 150px);overflow:auto;font-size:11px!important;z-index:1200!important}
+.touchMode #worldControls summary {cursor:pointer}.touchMode #worldControls input[type=range] {width:140px}
+@media (orientation:portrait) {.touchMode #gameplayHUD {width:calc(100vw - 24px);top:8px}.touchMode #worldControls {top:110px}.touchMode #downtownMap {left:8px;bottom:155px}.touchMode #touchLook {top:200px}.touchMode #interactionPrompt {display:none}}
+
+.loadingCard {width:min(440px,100%);text-align:center}
+.loadingCard h1 {font-size:25px;letter-spacing:.16em;color:#65dfef}
+.loadingCard small {display:block;font-size:13px;line-height:1.5;color:#adbec9}
+#loadingStage {font-size:18px;min-height:2.6em}
+#loadingProgress {display:block;width:100%;height:18px;border:1px solid #446675;border-radius:12px;overflow:hidden;background:#203e4a;accent-color:#69e5ab}
+#loadingProgress::-webkit-progress-bar {background:#203e4a}
+#loadingProgress::-webkit-progress-value {background:#69e5ab;border-radius:12px;transition:width .2s ease}
+#loadingProgress::-moz-progress-bar {background:#69e5ab;border-radius:12px}
+#loadingPercent {font-size:18px;font-variant-numeric:tabular-nums;color:#69e5ab}
+.loadingFailed #loadingStage {color:#ffcfb8}
+@media(prefers-reduced-motion:reduce){#loadingProgress::-webkit-progress-value{transition:none}}
+
+#rideDirection {display:flex;align-items:center;gap:10px;margin:8px 0;font:13px system-ui}
+#rideDirection[hidden]{display:none}
+.directionArrow {display:inline-block;font-size:32px;line-height:1;flex-shrink:0}
+#musicToggle {background:#203e4a;color:#e3f4eb;border:1px solid #66808a;border-radius:6px;padding:5px 9px;margin-top:6px}
+
+#musicToggle {pointer-events:auto}
+
+.backToAvatar {display:block;width:100%;padding:8px 12px;margin-bottom:8px;border:1px solid #78c7bc;border-radius:7px;background:#23554f;color:white;font:600 14px system-ui;cursor:pointer;pointer-events:auto}
+
+.rideWheel {display:block;width:100%;padding:8px;margin-bottom:8px;border:1px solid #d5b77a;border-radius:7px;background:#65522c;color:white;font:600 14px system-ui;cursor:pointer;pointer-events:auto}
+
+/* Keep both thumb pads and the map toggle reachable on narrow phones. */
+#touchLook {top:auto!important;bottom:max(18px,env(safe-area-inset-bottom));right:max(18px,env(safe-area-inset-right));width:112px;height:112px;border:2px solid #92c8d099;border-radius:50%;background:#153641aa;display:grid;place-items:center}
+#lookKnob {width:44px;height:44px;border-radius:50%;background:#77c6d2bb;border:2px solid #d2eeef;pointer-events:none}
+#touchLook small {bottom:7px;right:auto;color:white}
+.touchActions {right:148px;grid-template-columns:76px 76px;gap:5px}
+.touchActions button {min-height:42px;font-size:11px}
+#touchMap {position:fixed;right:8px;top:120px;min-width:85px;min-height:42px}
+.touchMode #interactionPrompt {bottom:145px;max-width:85vw;display:block}
+@media(orientation:portrait) {.touchActions {bottom:150px;right:12px} #touchMap {top:220px}}
+
+.landmarkTour {margin-top:7px}.landmarkTour select {width:100%;max-width:220px;padding:7px 2px;margin:6px 0;background:#203e4a;color:white;border:1px solid #73939c;border-radius:4px}.landmarkTour button {padding:7px 10px;background:#205346;color:white;border:1px solid #80bca5;border-radius:5px}
+
+.landmarkView #gameplayHUD,.landmarkView #interactionPrompt {display:none}
+/* The landmark picker must not cover the persistent map toggle. */
+#touchMap {top:auto!important;bottom:calc(max(18px,env(safe-area-inset-bottom)) + 125px)}
+.touchMode #worldControls {max-height:calc(100vh - 220px)!important}
+@media(orientation:portrait) {.touchMode #worldControls {max-height:calc(100vh - 310px)!important}}
+
+/* Health and summon remain visible above the mobile movement pad. */
+#playerLife{position:fixed;left:14px;bottom:160px;z-index:35;color:#ecf7f1;background:#102735e8;border:1px solid #668a95;border-radius:10px;padding:8px 10px;font:12px system-ui;max-width:245px}
+#playerLife button{margin:5px 0;background:#287c64;color:white;border:1px solid #91c7b6;border-radius:6px;padding:9px 14px;font-weight:700;touch-action:manipulation}
+#playerLife button:disabled{opacity:.5}.lifeMessage{max-width:230px;font-size:11px}
+#respawnScreen{position:fixed;inset:0;z-index:200;background:#18242ded;color:white;display:flex;align-items:center;justify-content:center;flex-direction:column;font:18px system-ui;text-align:center;padding:24px}
+#respawnScreen[hidden]{display:none}#respawnScreen button{padding:16px 24px;border:1px solid #a8dccb;border-radius:9px;background:#267c64;color:white;font:700 18px system-ui}
+.landmarkView #playerLife{display:none}
+@media(max-height:500px){#playerLife{bottom:145px;padding:5px 8px;font-size:11px}#playerLife button{padding:6px 12px}.lifeMessage{display:none}}
+
+.hudViews{display:none;gap:6px;margin-bottom:5px;pointer-events:auto}
+.touchMode .hudViews{display:flex}.hudViews button{padding:6px 10px;min-height:30px;border:1px solid #729eaa;border-radius:5px;color:#f3faf8;background:#234954;font:12px system-ui;touch-action:manipulation}
+#gameplayHUD.mapMode .walletContents,#gameplayHUD.mapMode #musicToggle{display:none}
+#gameplayHUD.mapMode{width:260px}
+.hudMapSlot #downtownMap{position:static!important;width:100%!important;max-height:none!important;box-shadow:none;border:0;background:transparent;overflow:hidden;pointer-events:auto}
+.hudMapSlot #downtownMap>:not(canvas){display:none!important}
+.hudMapSlot #downtownMap canvas{max-height:115px;object-fit:contain}
+.touchMode #rideDirection{font-size:10px;gap:5px;margin:4px 0}.touchMode .directionArrow{font-size:22px}
+.touchMode .directionLabel{max-height:29px;overflow:hidden}
+#playerLife .hazardStatus{color:#ffd374;font-weight:bold;font-size:11px;max-width:225px}
+#playerLife .evacuateCart{background:#ad482b;border-color:#ffbf80;margin-left:4px}
+#playerLife button[hidden]{display:none}#playerLife{z-index:1100}
+@media(max-height:500px){#gameplayHUD.mapMode{width:245px}.hudMapSlot #downtownMap canvas{max-height:95px}#playerLife .evacuateCart{display:block;margin:3px 0}#playerLife .evacuateCart[hidden]{display:none}}
+
+/* Larger Android actions leave both thumb pads clear. */
+@media (min-width:600px) {
+    .touchMode .touchActions {grid-template-columns:90px 90px;gap:8px}
+    .touchMode .touchActions button {min-height:52px;font-size:12px}
+}
+
+/* Free-roam work controls and contextual street conversations. */
+#streetLife { position:fixed; z-index:80; left:50%; bottom:74px; transform:translateX(-50%); width:min(430px,calc(100vw - 24px)); color:#f3f6fb; font:14px/1.4 system-ui,sans-serif; pointer-events:none; }
+#streetLife button { pointer-events:auto; border:1px solid #67818f; border-radius:8px; background:#17323fee; color:white; padding:10px 12px; cursor:pointer; min-height:44px; }
+#streetLife button:disabled { opacity:.5; }
+.streetButtons { display:flex; justify-content:center; gap:6px; flex-wrap:wrap; }
+.streetDialog { pointer-events:auto; margin-top:8px; border:1px solid #67818f; background:#10242af5; border-radius:12px; padding:14px; box-shadow:0 6px 28px #0009; }
+.streetDialog[hidden] { display:none; }
+.streetDialog button { margin:3px; }
+.touchMode #streetLife { bottom:200px; }
+@media(max-height:550px) { .touchMode #streetLife { left:54%; bottom:auto; top:8px; width:min(360px,50vw); } .streetDialog { padding:8px; } .streetDialog p { margin:6px 0; } }
+
+.streetDialog .talkPerson { display:block; width:100%; margin-bottom:10px; padding:8px; background:#17323f; color:white; border:1px solid #67818f; border-radius:6px; }
+.streetDialog .talkPerson[hidden] { display:none; }
+
+/* Desktop recovery controls sit beside the map; touch controls keep their pad clearance. */
+@media (min-width:701px) {
+    body:not(.touchMode) #playerLife {left:310px;bottom:18px;max-width:160px}
+}
+@media (min-width:701px) and (max-height:850px) {
+    body:not(.touchMode) #playerLife {left:275px}
+}
+
+/* Startup selection and shops fit small landscape screens without covering play. */
+#startChoices{position:fixed;inset:0;z-index:10000;background:#0c202bea;display:grid;place-items:center;overflow:auto;color:#ecf4ef;font:16px system-ui;padding:16px}
+.choiceCard{background:#14303b;border:1px solid #648a8e;border-radius:18px;padding:22px;max-width:660px;width:min(100%,660px);max-height:90dvh;overflow:auto;box-sizing:border-box}
+.choiceCard h1{margin:0 0 10px}.choiceCard label{display:block;margin:12px 0 5px}.choiceCard select{width:100%;min-height:42px;font:inherit}.choiceCard button{width:100%;margin-top:16px;padding:12px;font:inherit;background:#2c856d;color:white;border:0;border-radius:8px}
+.avatarPreview,.cartPreview{float:right;font:bold 22px monospace;line-height:18px;margin:8px 10px}.cartStats{min-height:45px;color:#cedfdc}
+#worldControls{max-height:42dvh;overflow:auto}#worldControls small{display:block;margin:5px 0;color:#b7cfcc}.cityServices button{margin:4px 0;padding:8px}.cityServices p{margin:8px 0}.cityServices{margin-top:8px}
+.choiceCard{display:grid;grid-template-columns:minmax(0,1fr) 155px;gap:4px 14px}.choiceCard>h1,.choiceCard>p:first-of-type,.choiceCard>.cartStats,.choiceCard>label:last-of-type,.choiceCard>button{grid-column:1/-1}.choiceCard>label{min-width:0}.avatarPreview,.cartPreview{float:none;align-self:center;justify-self:center;margin:0}.choiceCard>.cartStats{min-height:0}.choiceCard svg{display:block}
+@media(max-width:480px){.choiceCard{padding:14px;grid-template-columns:minmax(0,1fr) 90px}.cartPreview svg{width:90px}.choiceCard h1{font-size:24px}}

@@ -1,3 +1,5 @@
+import {AVATAR_CHOICES,playerChoice} from '../world/PlayerChoices.js';
+import { ACTOR_SCALE } from '../engine/ActorScale.js';
 /*
 ========================================================
 
@@ -15,6 +17,7 @@ Purpose:
 
 "use strict";
 
+import { PersonAvatar } from "../entities/PersonAvatar.js";
 import { AnimationController } from "./AnimationController.js";
 
 export class Player
@@ -100,37 +103,18 @@ export class Player
 
     async loadCharacter()
     {
-        const character =
-            await this.assetManager.instantiateCharacter(
-                "corey"
-            );
-
-        this.characterRoot =
-            character.root;
-
-        if (!this.characterRoot)
-        {
-            return;
-        }
-
-        this.characterRoot.parent =
-            this.mesh;
-
-        this.characterRoot.position.set(
-            0,
-            -1,
-            0
-        );
-
-        await this.animationController.initialize(
-            "corey",
-            character.skeletons,
-            character.animationGroups
-        );
+        this.avatar = new PersonAvatar(this.scene,AVATAR_CHOICES[playerChoice.avatar]);
+        this.characterRoot = this.avatar.root;
+        this.characterRoot.parent = this.mesh;
+        this.characterRoot.scaling.setAll(ACTOR_SCALE);
+        this.characterRoot.position.set(0,-1,0);
     }
+
 
     update(deltaSeconds)
     {
+        const move=this.input.getMoveVector();
+        this.avatar?.update(deltaSeconds,move.x!==0||move.z!==0,this.input.isRunning(),!!this.vehicle);
         if (this.vehicle)
         {
             this.mesh.position.copyFrom(
@@ -141,7 +125,7 @@ export class Player
             return;
         }
 
-        this.animationController.update();
+        // Procedural articulation replaces the legacy asset animation on this avatar.
 
         const movement =
             this.input.getMoveVector();
@@ -194,12 +178,8 @@ export class Player
                 ? this.runSpeed
                 : this.walkSpeed;
 
-        this.mesh.position.addInPlace(
-            direction.scale(
-                speed *
-                deltaSeconds
-            )
-        );
+        const next = this.mesh.position.add(direction.scale(speed * Math.min(deltaSeconds, 0.05)));
+        if (!this.terrain.downtown?.isBlocked(next.x, next.z, 0.5*ACTOR_SCALE)) this.mesh.position.copyFrom(next);
 
         const desiredRotation =
             Math.atan2(
@@ -225,7 +205,8 @@ export class Player
     {
         this.vehicle = vehicle;
         this.verticalVelocity = 0;
-        this.mesh.setEnabled(false);
+        this.characterRoot.scaling.setAll(vehicle.modelScale);
+        this.characterRoot.position.y=-.45*vehicle.modelScale;
     }
 
     exitVehicle(position)
@@ -233,6 +214,8 @@ export class Player
         this.vehicle = null;
         this.mesh.position.copyFrom(position);
         this.mesh.setEnabled(true);
+        this.characterRoot.scaling.setAll(ACTOR_SCALE);
+        this.characterRoot.position.y=-1;
     }
 
     get isDriving()

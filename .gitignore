@@ -21,3 +21,12 @@ dist/
 
 # OS
 desktop.ini
+# Android signing and generated outputs
+*.keystore
+*.jks
+android/local.properties
+android/out/
+
+# Python runtime caches
+__pycache__/
+*.py[cod]

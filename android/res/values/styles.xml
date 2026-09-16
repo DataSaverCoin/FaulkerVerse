@@ -1,0 +1,1 @@
+<resources><style name="AppTheme" parent="android:style/Theme.Material.NoActionBar"><item name="android:windowFullscreen">true</item><item name="android:windowActionModeOverlay">true</item><item name="android:windowLightStatusBar">false</item><item name="android:colorAccent">#71c9d5</item><item name="android:windowBackground">#102735</item></style></resources>

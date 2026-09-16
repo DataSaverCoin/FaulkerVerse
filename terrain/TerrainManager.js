@@ -42,7 +42,7 @@ export class TerrainManager
             {
                 width: Config.World.GroundSize,
                 height: Config.World.GroundSize,
-                subdivisions: terrainConfig.Subdivisions,
+                subdivisions: Config.World.Downtown ? 1 : terrainConfig.Subdivisions,
                 updatable: true
             },
             this.scene
@@ -79,6 +79,42 @@ export class TerrainManager
         };
     }
 
+    rebuildRegionalGround()
+    {
+        this.ground.dispose();
+        this.ground = BABYLON.MeshBuilder.CreateGround("Regional terrain", {
+            width: Config.World.GroundSize, height: Config.World.GroundSize,
+            subdivisions: 400, updatable: true
+        }, this.scene);
+        const positions=this.ground.getVerticesData(BABYLON.VertexBuffer.PositionKind), colors=[];
+        this.regionalHeights=new Float32Array(positions.length/3);
+        for(let i=0;i<positions.length;i+=3)
+        {
+            positions[i+1]=this.geology.height(positions[i],positions[i+2]);
+            this.regionalHeights[i/3]=positions[i+1];
+            colors.push(...this.geology.color(positions[i],positions[i+2]),1);
+        }
+        this.ground.updateVerticesData(BABYLON.VertexBuffer.PositionKind,positions);
+        this.ground.setVerticesData(BABYLON.VertexBuffer.ColorKind,colors);
+        this.ground.createNormals(true);
+        this.ground.refreshBoundingInfo();
+        this.ground.checkCollisions=true;
+        this.ground.receiveShadows=true;
+    }
+
+    getGroundHeightAt(x,z)
+    {
+        if(!this.regionalHeights) return 0.06;
+        // Match Babylon's two triangles per ground cell, including its north-first rows.
+        const size=Config.World.GroundSize, count=400;
+        const u=Math.max(0,Math.min(count-0.000001,(x+size/2)/size*count));
+        const v=Math.max(0,Math.min(count-0.000001,(size/2-z)/size*count));
+        const col=Math.floor(u),row=Math.floor(v),fx=u-col,fz=v-row;
+        const i=row*(count+1)+col,h=this.regionalHeights;
+        const a=h[i],b=h[i+1],c=h[i+count+1],d=h[i+count+2];
+        return fx<=fz ? a+(d-c)*fx+(c-a)*fz : a+(b-a)*fx+(d-b)*fz;
+    }
+
     sample(x, z)
     {
         const groundHeight = this.getHeightAt(x, z);
@@ -100,6 +136,12 @@ export class TerrainManager
 
     getHeightAt(x, z)
     {
+        if (Config.World.Downtown)
+        {
+            const roadHeight = this.downtown?.surface.height(x,z);
+            if (roadHeight != null) return Math.max(roadHeight,this.getGroundHeightAt(x,z));
+            return this.getGroundHeightAt(x,z);
+        }
         const terrainConfig = Config.World.Terrain;
         const frequency = terrainConfig.NoiseFrequency;
         const smoothness = Math.max(

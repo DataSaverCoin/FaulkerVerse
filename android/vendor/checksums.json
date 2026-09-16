@@ -1,0 +1,18 @@
+{
+  "babylon.js": {
+    "url": "https://cdn.babylonjs.com/babylon.js",
+    "sha256": "2aa5ca3f8c6710f0a9e6db0eabf0772a1c950a431241a1197c5e7f68f33bc6d6"
+  },
+  "babylonjs.loaders.min.js": {
+    "url": "https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js",
+    "sha256": "0929277d5f8e92ea73a97ed9891d2e60b185a86a332769a9d04227ef251c5213"
+  },
+  "babylon.gridMaterial.min.js": {
+    "url": "https://cdn.babylonjs.com/materialsLibrary/babylon.gridMaterial.min.js",
+    "sha256": "57aceb3d80da91d5a4df0c24500e1c2296e7d6cb35cb5a12cb8ce08f510d2627"
+  },
+  "LICENSE.txt": {
+    "url": "https://raw.githubusercontent.com/BabylonJS/Babylon.js/master/license.md",
+    "sha256": "9362ea9ea17cb221a20cbbd63f404710834cc273d2a9a7b60314fd68ab702cd6"
+  }
+}

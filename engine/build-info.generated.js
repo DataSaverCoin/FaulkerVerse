@@ -5,7 +5,7 @@
 export const BuildInfo = Object.freeze({
     version: "0.13.2",
     sprint: "Sprint 13.2",
-    branch: "work",
-    commit: "5f2abef",
-    date: "2026-07-21T03:29:08Z"
+    branch: "feature/android-touch-controls",
+    commit: "sprint-10-foundation-24-g2c6beb5-dirty",
+    date: "2026-09-14T23:49:14Z"
 });

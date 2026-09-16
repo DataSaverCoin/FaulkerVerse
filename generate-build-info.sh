@@ -11,7 +11,7 @@ branch=$(
     git -C "$repository_root" symbolic-ref --short HEAD 2>/dev/null ||
     printf 'detached'
 )
-commit=$(git -C "$repository_root" rev-parse --short HEAD)
+commit=$(git -C "$repository_root" describe --always --dirty)
 build_date=$(date -u "+%Y-%m-%dT%H:%M:%SZ")
 branch=$(printf '%s' "$branch" | sed 's/\\/\\\\/g; s/"/\\"/g')
 version=$(printf '%s' "$version" | sed 's/\\/\\\\/g; s/"/\\"/g')

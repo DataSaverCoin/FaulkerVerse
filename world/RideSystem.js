@@ -1,3 +1,4 @@
+import { ACTOR_SCALE } from '../engine/ActorScale.js';
 /*
 ========================================================
 
@@ -13,6 +14,9 @@ Purpose:
 */
 
 "use strict";
+
+import { RideDispatch } from "./RideDispatch.js";
+import { PersonAvatar } from "../entities/PersonAvatar.js";
 
 export const RideState = Object.freeze({
     IDLE: "IDLE",
@@ -32,6 +36,7 @@ export class RideSystem
         this.cart = cart;
         this.wallet = wallet;
         this.audio = audio;
+        this.onDuty=false;
         this.state = RideState.IDLE;
         this.rideId = 0;
         this.fare = 0;
@@ -54,11 +59,12 @@ export class RideSystem
 
     initialize()
     {
-        this.assignNextRide();
+        this.dispatch=new RideDispatch(this.terrain.downtown?.stops||this.routes.flat().map((s,i)=>({...s,name:`District stop ${i+1}`})));
     }
 
     update(deltaSeconds)
     {
+        if(this.onDuty&&this.state===RideState.IDLE){this.nextRideDelay-=deltaSeconds;if(this.nextRideDelay<=0)this.assignNextRide();}
         if (this.state === RideState.ASSIGNED && this.cart.driver)
         {
             this.transitionTo(RideState.DRIVING_TO_PICKUP);
@@ -67,7 +73,7 @@ export class RideSystem
 
         if (
             this.state === RideState.DRIVING_TO_PICKUP &&
-            this.distanceTo(this.pickup) < 4.5 &&
+            this.cart.driver && this.distanceTo(this.pickup) < 4.5 &&
             Math.abs(this.cart.speed) < 2
         )
         {
@@ -81,7 +87,7 @@ export class RideSystem
 
         if (
             this.state === RideState.DRIVING_TO_DESTINATION &&
-            this.distanceTo(this.destination) < 4.5 &&
+            this.cart.driver && this.distanceTo(this.destination) < 4.5 &&
             Math.abs(this.cart.speed) < 2
         )
         {
@@ -93,11 +99,18 @@ export class RideSystem
             this.nextRideDelay -= deltaSeconds;
             if (this.nextRideDelay <= 0)
             {
+                this.pickup=null;this.destination=null;this.fare=0;
                 this.transitionTo(RideState.IDLE);
                 this.assignNextRide();
             }
         }
 
+        if(['PASSENGER_ONBOARD','DRIVING_TO_DESTINATION'].includes(this.state)&&this.passenger)
+        {
+            const a=this.cart.rotation.y,scale=this.cart.modelScale;
+            this.passenger.position.copyFrom(this.cart.position).addInPlace(new BABYLON.Vector3(.4*Math.cos(a)+Math.sin(a),this.cart.trafficVehicle?-.45:.25,-.4*Math.sin(a)+Math.cos(a)).scale(scale));
+            this.passenger.rotation.y=a;this.passengerAvatar.update(0,false,false,true);
+        }
         if (this.marker)
         {
             this.markerTime += deltaSeconds;
@@ -109,11 +122,15 @@ export class RideSystem
 
     assignNextRide()
     {
+        if(!this.onDuty||this.cart.seatCapacity<2)return;
+        const route=this.dispatch.next(this.cart.position,this.lastDropoff);
+        if(!route){this.nextRideDelay=2.5;return;}
         this.rideId += 1;
-        const route = this.routes[(this.rideId - 1) % this.routes.length];
+        this.pickupName = route[0].name;
+        this.destinationName = route[1].name;
         this.pickup = this.toTerrainPosition(route[0]);
         this.destination = this.toTerrainPosition(route[1]);
-        this.fare = 14 + (this.rideId % 4) * 4;
+        this.fare = 12 + Math.round(Math.hypot(route[0].x-route[1].x,route[0].z-route[1].z)/30);
         this.createPassenger(this.pickup);
         this.showMarker(this.pickup, [1.0, 0.64, 0.05], "PICKUP");
         this.transitionTo(RideState.ASSIGNED);
@@ -122,15 +139,18 @@ export class RideSystem
     boardPassenger()
     {
         this.transitionTo(RideState.PASSENGER_ONBOARD);
-        this.passenger.setEnabled(false);
+        this.passenger.setEnabled(true);
         this.showMarker(this.destination, [0.18, 0.78, 1.0], "DROP OFF");
         this.audio.play("pickup");
     }
 
     completeRide()
     {
+        this.streetRides?.release(true);
+        this.passengerAvatar?.update(0,false,false,false);
+        this.lastDropoff={x:this.destination.x,z:this.destination.z,name:this.destinationName};
         this.passenger.position.copyFrom(this.destination);
-        this.passenger.position.y += 0.9;
+        this.passenger.position.y += 0.02;
         this.passenger.setEnabled(true);
         this.wallet.deposit(this.fare);
         this.showMarker(null);
@@ -138,7 +158,8 @@ export class RideSystem
         this.nextRideDelay = 2.5;
         this.audio.play("completed");
         window.setTimeout(() => this.audio.play("money"), 180);
-        window.setTimeout(() => this.passenger && this.passenger.setEnabled(false), 1200);
+        const departingPassenger=this.passenger;
+        window.setTimeout(() => !departingPassenger.isDisposed() && departingPassenger.setEnabled(false), 1200);
     }
 
     transitionTo(state)
@@ -171,13 +192,15 @@ export class RideSystem
     get objective()
     {
         const objectives = {
-            [RideState.IDLE]: "Finding your next passenger…",
-            [RideState.ASSIGNED]: "Enter the golf cart",
+            [RideState.IDLE]: this.onDuty?"Finding your next passenger…":"Off duty · Explore, talk, or offer a ride",
+            [RideState.ASSIGNED]: "Enter your vehicle",
             [RideState.DRIVING_TO_PICKUP]: "Drive to the gold pickup marker",
             [RideState.PASSENGER_ONBOARD]: "Passenger boarding…",
             [RideState.DRIVING_TO_DESTINATION]: "Drive to the green destination",
             [RideState.COMPLETED]: `Ride complete · +$${this.fare}`
         };
+        if (this.pickupName && this.state === RideState.DRIVING_TO_PICKUP) return `Pick up at ${this.pickupName}`;
+        if (this.destinationName && this.state === RideState.DRIVING_TO_DESTINATION) return `Drop off at ${this.destinationName} · blue marker`;
         return objectives[this.state];
     }
 
@@ -214,29 +237,21 @@ export class RideSystem
         );
     }
 
-    createPassenger(position)
+    createPassenger(position,traits={})
     {
-        if (this.passenger)
-        {
-            this.passenger.dispose();
-        }
-        this.passenger = BABYLON.MeshBuilder.CreateCapsule(
-            "RidePassenger",
-            { radius: 0.42, height: 1.8 },
-            this.scene
-        );
+        this.passengerAvatar?.dispose();
+        this.passengerAvatar=new PersonAvatar(this.scene,{name:'Ride passenger',personal:false,gender:this.rideId%2?'woman':'man',...traits,shirt:['#953a49','#287e92','#b68635'][this.rideId%3]});
+        this.passenger=this.passengerAvatar.root;
+        this.passenger.scaling.setAll(ACTOR_SCALE);
         this.passenger.position.copyFrom(position);
-        this.passenger.position.y += 0.9;
-        const material = new BABYLON.StandardMaterial("PassengerMaterial", this.scene);
-        material.diffuseColor = new BABYLON.Color3(0.82, 0.24, 0.3);
-        this.passenger.material = material;
+        this.passenger.position.y+=.02;
     }
 
     showMarker(position, color, label = "")
     {
         if (this.marker)
         {
-            this.marker.dispose();
+            this.marker.dispose(false,true);
             this.marker = null;
         }
         if (!position)

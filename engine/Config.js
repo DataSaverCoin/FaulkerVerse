@@ -18,6 +18,7 @@ export const Config =
 {
     Engine:
     {
+        ShowDeveloperHUD: false,
         Antialias: true,
         AdaptToDeviceRatio: true
     },
@@ -29,11 +30,11 @@ export const Config =
 
     Camera:
     {
-        Distance: 8,
-        MinDistance: 5,
+        Distance: 2.6,
+        MinDistance: 1.2,
         MaxDistance: 16,
-        Pitch: Math.PI / 4,
-        TargetHeight: 1.75,
+        Pitch: 1.22,
+        TargetHeight: -0.55,
         FollowSpeed: 10.0,
         DistanceFollowSpeed: 2.5,
         ZoomSpeed: 0.02
@@ -41,7 +42,8 @@ export const Config =
 
     World:
     {
-        GroundSize: 500,
+        GroundSize: 5200,
+        Downtown: true,
 
         Terrain:
         {
